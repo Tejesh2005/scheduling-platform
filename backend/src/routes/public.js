@@ -10,7 +10,11 @@ router.get('/:username/:slug', async (req, res, next) => {
     const { username, slug } = req.params;
 
     const result = await db.query(
-      `SELECT et.*, u.name as user_name, u.username, u.timezone as user_timezone
+      `SELECT et.*, 
+              u.name as user_name, 
+              u.username, 
+              u.timezone as user_timezone,
+              u.email as user_email
        FROM event_types et
        JOIN users u ON et.user_id = u.id
        WHERE u.username = \$1 AND et.slug = \$2 AND et.is_active = true`,
@@ -39,7 +43,7 @@ router.get('/:username/:slug/slots', async (req, res, next) => {
 
     // Get event type
     const eventResult = await db.query(
-      `SELECT et.*, u.id as uid
+      `SELECT et.*, u.id as uid, u.timezone as user_timezone
        FROM event_types et
        JOIN users u ON et.user_id = u.id
        WHERE u.username = \$1 AND et.slug = \$2 AND et.is_active = true`,
@@ -166,7 +170,7 @@ router.post('/:username/:slug/book', async (req, res, next) => {
 
     // Get event type
     const eventResult = await db.query(
-      `SELECT et.*, u.id as uid
+      `SELECT et.*, u.id as uid, u.name as user_name, u.timezone as user_timezone
        FROM event_types et
        JOIN users u ON et.user_id = u.id
        WHERE u.username = \$1 AND et.slug = \$2 AND et.is_active = true`,
@@ -205,7 +209,8 @@ router.post('/:username/:slug/book', async (req, res, next) => {
     booking.event_title = eventType.title;
     booking.event_duration = eventType.duration;
     booking.event_location = eventType.location;
-    booking.host_name = eventResult.rows[0].user_name || 'John Doe';
+    booking.host_name = eventType.user_name || 'John Doe';
+    booking.user_timezone = eventType.user_timezone || 'Asia/Kolkata';
 
     res.status(201).json({ success: true, data: booking });
   } catch (err) {
