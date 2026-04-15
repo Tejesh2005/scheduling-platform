@@ -9,8 +9,8 @@ A full-stack scheduling/booking web application that closely replicates Cal.com'
 
 ## 🖥️ Live Demo
 
-- **App**: [your-deployed-url]
-- **API**: [your-api-url]
+- **App**: https://scheduling-platform-app.onrender.com
+
 
 ## 🚀 Tech Stack
 
