@@ -38,10 +38,17 @@ A full-stack scheduling/booking web application that closely replicates Cal.com'
 - ✅ Date overrides (block specific dates or set custom hours)
 - ✅ Buffer time between meetings (before and after)
 - ✅ Booking cancellation with reason
+- ✅ Rescheduling flow for existing bookings
+- ✅ Email notifications on booking confirmation/cancellation/reschedule
+- ✅ Custom booking questions (text, textarea, dropdown)
+- ✅ Timezone selection for bookers
+- ✅ 12h/24h time format toggle
+- ✅ Search functionality across event types and bookings
+- ✅ Pagination for bookings list
 - ✅ Real-time slot availability (booked slots removed)
 - ✅ Auto-generated URL slugs from event title
 - ✅ Loading skeletons and empty states
-- ✅ Cal.com-matching UI/UX design with dark sidebar
+- ✅ Cal.com-matching dark theme UI/UX
 
 ## 🗄️ Database Schema
 
@@ -50,11 +57,12 @@ A full-stack scheduling/booking web application that closely replicates Cal.com'
 | Table | Description |
 |-------|-------------|
 | users | Default logged-in user (no auth) |
-| event_types | Meeting types with duration, location, color |
+| event_types | Meeting types with duration, location, buffer times |
 | availability_schedules | Named schedules with timezone |
 | availability_slots | Time ranges for each day of the week |
 | date_overrides | Exceptions for specific dates |
 | bookings | Actual booked meetings with status tracking |
+| custom_questions | Custom booking form questions per event type |
 
 ### Key Design Decisions
 - UUIDs as primary keys for all tables
@@ -87,6 +95,16 @@ Create a .env file in the backend folder with these values:
     PORT=5000
     DEFAULT_USER_ID=550e8400-e29b-41d4-a716-446655440000
     FRONTEND_URL=http://localhost:5173
+
+For email notifications (optional — app works without it):
+
+    SMTP_HOST=smtp.gmail.com
+    SMTP_PORT=587
+    SMTP_USER=your-email@gmail.com
+    SMTP_PASS=your-gmail-app-password
+    SMTP_FROM=your-email@gmail.com
+
+> To get a Gmail app password: Google Account → Security → 2-Step Verification → App Passwords
 
 Setup and seed the database:
 
@@ -127,7 +145,8 @@ Setup and seed the database:
     │       ├── middleware/
     │       │   └── errorHandler.js
     │       └── utils/
-    │           └── timeSlots.js
+    │           ├── timeSlots.js
+    │           └── email.js
     ├── frontend/
     │   ├── index.html
     │   ├── vite.config.js
@@ -139,6 +158,8 @@ Setup and seed the database:
     │       ├── api/
     │       │   └── index.js
     │       ├── components/
+    │       │   ├── Bookings/
+    │       │   │   └── RescheduleModal.jsx
     │       │   ├── Layout/
     │       │   │   ├── Sidebar.jsx
     │       │   │   └── Layout.jsx
@@ -151,12 +172,14 @@ Setup and seed the database:
     │       │       ├── Modal.jsx
     │       │       ├── Select.jsx
     │       │       ├── Badge.jsx
-    │       │       └── Toggle.jsx
+    │       │       ├── Toggle.jsx
+    │       │       └── Tooltip.jsx
     │       └── pages/
     │           ├── EventTypesPage.jsx
     │           ├── AvailabilityPage.jsx
     │           ├── BookingsPage.jsx
-    │           └── PublicBookingPage.jsx
+    │           ├── PublicBookingPage.jsx
+    │           └── PublicProfilePage.jsx
     └── README.md
 
 ## 🔌 API Endpoints
@@ -171,6 +194,15 @@ Setup and seed the database:
 | PUT | /api/event-types/:id | Update event type |
 | PATCH | /api/event-types/:id/toggle | Toggle active/inactive |
 | DELETE | /api/event-types/:id | Delete event type |
+
+### Custom Questions
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/event-types/:id/questions | Get questions for event type |
+| POST | /api/event-types/:id/questions | Add a custom question |
+| PUT | /api/event-types/:id/questions/:qId | Update a question |
+| DELETE | /api/event-types/:id/questions/:qId | Delete a question |
 
 ### Availability
 
@@ -210,6 +242,12 @@ The database is seeded with:
 | Event Types | 15 Min Meeting, 30 Min Meeting, 60 Min Consultation |
 | Availability | Monday to Friday, 9:00 AM to 5:00 PM Eastern |
 | Bookings | 4 upcoming, 1 past (completed), 1 cancelled |
+
+### Public Booking URLs (after seeding)
+- `http://localhost:5173/johndoe` — Profile page with all events
+- `http://localhost:5173/johndoe/15min` — 15 minute meeting
+- `http://localhost:5173/johndoe/30min` — 30 minute meeting
+- `http://localhost:5173/johndoe/60min` — 60 minute consultation
 
 ## 🧪 Assumptions
 
