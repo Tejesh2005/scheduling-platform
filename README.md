@@ -22,7 +22,8 @@ A full-stack scheduling/booking web application that closely replicates Cal.com'
 | HTTP Client | Axios                           |
 | Icons       | Lucide React                    |
 | Date Utils  | date-fns + date-fns-tz          |
-| Deployment  | Vercel (FE) + Render (BE) + Neon (DB) |
+| Email       | Resend                          |
+| Deployment  | Render (FE + BE) + Neon (DB)    |
 
 ## 📋 Features
 
@@ -98,13 +99,11 @@ Create a .env file in the backend folder with these values:
 
 For email notifications (optional — app works without it):
 
-    SMTP_HOST=smtp.gmail.com
-    SMTP_PORT=587
-    SMTP_USER=your-email@gmail.com
-    SMTP_PASS=your-gmail-app-password
-    SMTP_FROM=your-email@gmail.com
+    RESEND_API_KEY=re_xxxxxxxxxxxxxxxxx
+    RESEND_FROM=onboarding@resend.dev
+    RESEND_HOST_EMAIL=your-email@example.com
 
-> To get a Gmail app password: Google Account → Security → 2-Step Verification → App Passwords
+> For production, use a verified domain sender in Resend (for example, no-reply@yourdomain.com).
 
 Setup and seed the database:
 
@@ -123,6 +122,47 @@ Setup and seed the database:
     Frontend:  http://localhost:5173
     Backend:   http://localhost:5000
     Health:    http://localhost:5000/api/health
+
+## ☁️ Render Deployment Notes
+
+If frontend and backend are both hosted on Render, configure environment variables like this:
+
+### Backend (Render Web Service)
+
+Required variables:
+
+    DATABASE_URL=postgresql://...
+    DEFAULT_USER_ID=550e8400-e29b-41d4-a716-446655440000
+    FRONTEND_URL=https://your-frontend.onrender.com
+    RESEND_API_KEY=re_xxxxxxxxxxxxxxxxx
+    RESEND_FROM=onboarding@resend.dev
+    RESEND_HOST_EMAIL=your-email@example.com
+
+Optional:
+
+    PORT=10000
+
+Build/Start:
+
+    Build Command: npm install
+    Start Command: npm start
+
+### Frontend (Render Static Site)
+
+Required variable:
+
+    VITE_API_URL=https://your-backend.onrender.com/api
+
+Build/Publish:
+
+    Build Command: npm install && npm run build
+    Publish Directory: dist
+
+### Important Notes
+
+- Remove old SMTP variables from Render to avoid confusion.
+- Local .env values do not automatically apply to Render.
+- After changing env vars, trigger a redeploy in Render.
 
 ## 📁 Project Structure
 
