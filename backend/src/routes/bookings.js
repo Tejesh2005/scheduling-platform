@@ -1,3 +1,13 @@
+// FILE: src/routes/bookings.js
+// UPDATE all the SELECT queries to also include et.slug
+
+// For example, change every occurrence of:
+//   SELECT b.*, et.title as event_title, et.duration, et.location, et.color
+// To:
+//   SELECT b.*, et.title as event_title, et.slug as event_slug, et.duration, et.location, et.color
+
+// Here's the full updated file:
+
 const express = require('express');
 const router = express.Router();
 const db = require('../db/connection');
@@ -14,7 +24,7 @@ router.get('/', async (req, res, next) => {
 
     if (status === 'upcoming') {
       query = `
-        SELECT b.*, et.title as event_title, et.duration, et.location, et.color
+        SELECT b.*, et.title as event_title, et.slug as event_slug, et.duration, et.location, et.color
         FROM bookings b
         JOIN event_types et ON b.event_type_id = et.id
         WHERE b.user_id = \$1 
@@ -23,7 +33,7 @@ router.get('/', async (req, res, next) => {
         ORDER BY b.start_time ASC`;
     } else if (status === 'past') {
       query = `
-        SELECT b.*, et.title as event_title, et.duration, et.location, et.color
+        SELECT b.*, et.title as event_title, et.slug as event_slug, et.duration, et.location, et.color
         FROM bookings b
         JOIN event_types et ON b.event_type_id = et.id
         WHERE b.user_id = \$1 
@@ -32,7 +42,7 @@ router.get('/', async (req, res, next) => {
         ORDER BY b.start_time DESC`;
     } else if (status === 'cancelled') {
       query = `
-        SELECT b.*, et.title as event_title, et.duration, et.location, et.color
+        SELECT b.*, et.title as event_title, et.slug as event_slug, et.duration, et.location, et.color
         FROM bookings b
         JOIN event_types et ON b.event_type_id = et.id
         WHERE b.user_id = \$1 
@@ -40,7 +50,7 @@ router.get('/', async (req, res, next) => {
         ORDER BY b.start_time DESC`;
     } else {
       query = `
-        SELECT b.*, et.title as event_title, et.duration, et.location, et.color
+        SELECT b.*, et.title as event_title, et.slug as event_slug, et.duration, et.location, et.color
         FROM bookings b
         JOIN event_types et ON b.event_type_id = et.id
         WHERE b.user_id = \$1
@@ -58,7 +68,7 @@ router.get('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const result = await db.query(
-      `SELECT b.*, et.title as event_title, et.duration, et.location, et.color
+      `SELECT b.*, et.title as event_title, et.slug as event_slug, et.duration, et.location, et.color
        FROM bookings b
        JOIN event_types et ON b.event_type_id = et.id
        WHERE b.id = \$1 AND b.user_id = \$2`,

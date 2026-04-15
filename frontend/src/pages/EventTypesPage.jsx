@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Plus, Calendar, Search } from 'lucide-react';
+// FILE: src/pages/EventTypesPage.jsx
+
+import { useState, useEffect, useMemo } from 'react';
+import { Plus, Calendar, Search, X } from 'lucide-react';
 import { eventTypesAPI } from '../api';
 import Button from '../components/UI/Button';
 import Modal from '../components/UI/Modal';
@@ -13,6 +15,10 @@ export default function EventTypesPage() {
   const [editingEventType, setEditingEventType] = useState(null);
   const [saving, setSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+
+  // Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     fetchEventTypes();
@@ -28,6 +34,18 @@ export default function EventTypesPage() {
       setLoading(false);
     }
   };
+
+  // Filtered event types based on search
+  const filteredEventTypes = useMemo(() => {
+    if (!searchQuery.trim()) return eventTypes;
+    const q = searchQuery.toLowerCase();
+    return eventTypes.filter(
+      (et) =>
+        et.title?.toLowerCase().includes(q) ||
+        et.slug?.toLowerCase().includes(q) ||
+        et.description?.toLowerCase().includes(q)
+    );
+  }, [eventTypes, searchQuery]);
 
   const handleCreate = async (data) => {
     setSaving(true);
@@ -98,7 +116,7 @@ export default function EventTypesPage() {
 
   return (
     <div>
-      {/* Page Header - matching Cal.com exactly */}
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Event types</h1>
@@ -107,10 +125,36 @@ export default function EventTypesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <button className="flex items-center gap-2 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-3 py-2 text-sm text-gray-400 hover:text-white transition-colors">
-            <Search className="w-4 h-4" />
-            <span className="hidden sm:inline">Search</span>
-          </button>
+          {showSearch ? (
+            <div className="flex items-center gap-2 border border-[#333333] bg-[#1a1a1a] rounded-md px-3 py-2">
+              <Search className="w-4 h-4 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Search event types..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+                className="bg-transparent text-sm text-white placeholder:text-gray-500 focus:outline-none w-40 sm:w-52"
+              />
+              <button
+                onClick={() => {
+                  setShowSearch(false);
+                  setSearchQuery('');
+                }}
+                className="text-gray-500 hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowSearch(true)}
+              className="flex items-center gap-2 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-3 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              <Search className="w-4 h-4" />
+              <span className="hidden sm:inline">Search</span>
+            </button>
+          )}
           <button
             onClick={openCreateModal}
             className="flex items-center gap-1.5 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-3 py-2 text-sm font-medium text-white transition-colors"
@@ -122,28 +166,36 @@ export default function EventTypesPage() {
       </div>
 
       {/* Event Types List */}
-      {eventTypes.length === 0 ? (
+      {filteredEventTypes.length === 0 ? (
         <div className="bg-[#111111] border border-[#222222] rounded-lg p-8 sm:p-12 text-center">
           <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4">
-            <Calendar className="w-8 h-8 text-gray-500" />
+            {searchQuery ? (
+              <Search className="w-8 h-8 text-gray-500" />
+            ) : (
+              <Calendar className="w-8 h-8 text-gray-500" />
+            )}
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">
-            No event types yet
+            {searchQuery ? 'No results found' : 'No event types yet'}
           </h3>
           <p className="text-sm text-gray-400 mb-6">
-            Create your first event type to start accepting bookings.
+            {searchQuery
+              ? `No event types match "${searchQuery}"`
+              : 'Create your first event type to start accepting bookings.'}
           </p>
-          <button
-            onClick={openCreateModal}
-            className="inline-flex items-center gap-1.5 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-4 py-2 text-sm font-medium text-white transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            New Event Type
-          </button>
+          {!searchQuery && (
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center gap-1.5 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-4 py-2 text-sm font-medium text-white transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              New Event Type
+            </button>
+          )}
         </div>
       ) : (
         <div className="bg-[#111111] border border-[#222222] rounded-lg overflow-hidden divide-y divide-[#1e1e1e]">
-          {eventTypes.map((et) => (
+          {filteredEventTypes.map((et) => (
             <EventTypeCard
               key={et.id}
               eventType={et}

@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+// FILE: src/pages/BookingsPage.jsx
+
+import { useState, useEffect, useMemo } from 'react';
 import {
   Calendar,
   Clock,
@@ -10,11 +12,15 @@ import {
   Video,
   ChevronLeft,
   ChevronRight,
+  Search,
+  CalendarClock,
+  X as XIcon,
 } from 'lucide-react';
 import { bookingsAPI } from '../api';
 import Button from '../components/UI/Button';
 import Badge from '../components/UI/Badge';
 import Modal from '../components/UI/Modal';
+import RescheduleModal from '../components/Bookings/RescheduleModal';
 
 const TABS = [
   { key: 'upcoming', label: 'Upcoming' },
@@ -22,16 +28,33 @@ const TABS = [
   { key: 'cancelled', label: 'Cancelled' },
 ];
 
+const ROWS_OPTIONS = [10, 25, 50];
+
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancelModal, setCancelModal] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
+  const [rescheduleBooking, setRescheduleBooking] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+
+  // Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchBookings();
   }, [activeTab]);
+
+  // Reset pagination when tab or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery, rowsPerPage]);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -50,10 +73,18 @@ export default function BookingsPage() {
       await bookingsAPI.cancel(cancelModal, cancelReason);
       setCancelModal(null);
       setCancelReason('');
+      setOpenMenuId(null);
       fetchBookings();
     } catch (err) {
       console.error('Error cancelling booking:', err);
     }
+  };
+
+  const handleReschedule = async (bookingId, data) => {
+    await bookingsAPI.reschedule(bookingId, data);
+    setRescheduleBooking(null);
+    setOpenMenuId(null);
+    fetchBookings();
   };
 
   const formatDate = (dateStr) => {
@@ -67,15 +98,37 @@ export default function BookingsPage() {
 
   const formatTime = (dateStr) => {
     const date = new Date(dateStr);
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    }).toLowerCase();
+    return date
+      .toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+      .toLowerCase();
   };
 
+  // Filtered bookings by search
+  const filteredBookings = useMemo(() => {
+    if (!searchQuery.trim()) return bookings;
+    const q = searchQuery.toLowerCase();
+    return bookings.filter(
+      (b) =>
+        b.booker_name?.toLowerCase().includes(q) ||
+        b.booker_email?.toLowerCase().includes(q) ||
+        b.event_title?.toLowerCase().includes(q) ||
+        b.notes?.toLowerCase().includes(q)
+    );
+  }, [bookings, searchQuery]);
+
+  // Paginated bookings
+  const totalPages = Math.ceil(filteredBookings.length / rowsPerPage);
+  const paginatedBookings = useMemo(() => {
+    const start = (currentPage - 1) * rowsPerPage;
+    return filteredBookings.slice(start, start + rowsPerPage);
+  }, [filteredBookings, currentPage, rowsPerPage]);
+
   // Group bookings by date label
-  const groupedBookings = bookings.reduce((groups, booking) => {
+  const groupedBookings = paginatedBookings.reduce((groups, booking) => {
     const now = new Date();
     const bookingDate = new Date(booking.start_time);
     const tomorrow = new Date(now);
@@ -87,7 +140,11 @@ export default function BookingsPage() {
     } else if (bookingDate.toDateString() === tomorrow.toDateString()) {
       label = 'TOMORROW';
     } else {
-      label = 'NEXT';
+      label = bookingDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+      }).toUpperCase();
     }
 
     if (!groups[label]) {
@@ -96,6 +153,9 @@ export default function BookingsPage() {
     groups[label].push(booking);
     return groups;
   }, {});
+
+  const startRow = (currentPage - 1) * rowsPerPage + 1;
+  const endRow = Math.min(currentPage * rowsPerPage, filteredBookings.length);
 
   return (
     <div>
@@ -107,7 +167,7 @@ export default function BookingsPage() {
         </p>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs + Search */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div className="flex items-center gap-1 bg-[#111111] border border-[#222222] rounded-lg p-1">
           {TABS.map((tab) => (
@@ -124,6 +184,40 @@ export default function BookingsPage() {
             </button>
           ))}
         </div>
+
+        {/* Search */}
+        <div className="flex items-center gap-2">
+          {showSearch ? (
+            <div className="flex items-center gap-2 bg-[#111111] border border-[#222222] rounded-lg px-3 py-1.5">
+              <Search className="w-4 h-4 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Search by name, email, event..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+                className="bg-transparent text-sm text-white placeholder:text-gray-500 focus:outline-none w-48 sm:w-64"
+              />
+              <button
+                onClick={() => {
+                  setShowSearch(false);
+                  setSearchQuery('');
+                }}
+                className="text-gray-500 hover:text-white transition-colors"
+              >
+                <XIcon className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowSearch(true)}
+              className="flex items-center gap-2 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-3 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              <Search className="w-4 h-4" />
+              <span className="hidden sm:inline">Search</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Bookings List */}
@@ -133,16 +227,24 @@ export default function BookingsPage() {
           <div className="h-20 bg-[#1a1a1a] rounded" />
           <div className="h-20 bg-[#1a1a1a] rounded" />
         </div>
-      ) : bookings.length === 0 ? (
+      ) : filteredBookings.length === 0 ? (
         <div className="bg-[#111111] border border-[#222222] rounded-lg p-8 sm:p-12 text-center">
           <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4">
-            <Calendar className="w-8 h-8 text-gray-500" />
+            {searchQuery ? (
+              <Search className="w-8 h-8 text-gray-500" />
+            ) : (
+              <Calendar className="w-8 h-8 text-gray-500" />
+            )}
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">
-            No {activeTab} bookings
+            {searchQuery
+              ? 'No results found'
+              : `No ${activeTab} bookings`}
           </h3>
           <p className="text-sm text-gray-400">
-            {activeTab === 'upcoming'
+            {searchQuery
+              ? `No bookings match "${searchQuery}"`
+              : activeTab === 'upcoming'
               ? 'You have no upcoming bookings. Share your booking link to get started.'
               : activeTab === 'past'
               ? 'No past bookings found.'
@@ -167,7 +269,8 @@ export default function BookingsPage() {
                             {formatDate(booking.start_time)}
                           </div>
                           <div className="text-sm text-gray-400">
-                            {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
+                            {formatTime(booking.start_time)} -{' '}
+                            {formatTime(booking.end_time)}
                           </div>
                           <div className="flex items-center gap-1.5 mt-1.5">
                             <Video className="w-3.5 h-3.5 text-gray-500" />
@@ -181,7 +284,8 @@ export default function BookingsPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-semibold text-white">
-                              {booking.event_title} between John Doe and {booking.booker_name}
+                              {booking.event_title} between John Doe and{' '}
+                              {booking.booker_name}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-500">
@@ -196,23 +300,61 @@ export default function BookingsPage() {
                           )}
 
                           {booking.status === 'cancelled' && (
-                            <Badge variant="danger" className="mt-2">Cancelled</Badge>
+                            <Badge variant="danger" className="mt-2">
+                              Cancelled
+                            </Badge>
                           )}
                         </div>
                       </div>
 
-                      {/* Actions */}
+                      {/* Actions - Dropdown Menu */}
                       <div className="flex items-center self-start">
-                        {booking.status === 'confirmed' && activeTab === 'upcoming' && (
-                          <div className="relative">
-                            <button
-                              onClick={() => setCancelModal(booking.id)}
-                              className="p-2 rounded-md hover:bg-[#1a1a1a] text-gray-500 hover:text-white transition-colors"
-                            >
-                              <MoreHorizontal className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
+                        {booking.status === 'confirmed' &&
+                          activeTab === 'upcoming' && (
+                            <div className="relative">
+                              <button
+                                onClick={() =>
+                                  setOpenMenuId(
+                                    openMenuId === booking.id ? null : booking.id
+                                  )
+                                }
+                                className="p-2 rounded-md hover:bg-[#1a1a1a] text-gray-500 hover:text-white transition-colors"
+                              >
+                                <MoreHorizontal className="w-4 h-4" />
+                              </button>
+
+                              {openMenuId === booking.id && (
+                                <>
+                                  <div
+                                    className="fixed inset-0 z-10"
+                                    onClick={() => setOpenMenuId(null)}
+                                  />
+                                  <div className="absolute right-0 top-9 z-20 w-48 bg-[#1a1a1a] border border-[#282828] rounded-lg shadow-xl py-1">
+                                    <button
+                                      onClick={() => {
+                                        setOpenMenuId(null);
+                                        setRescheduleBooking(booking);
+                                      }}
+                                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:bg-[#222222] hover:text-white"
+                                    >
+                                      <CalendarClock className="w-3.5 h-3.5" />
+                                      Reschedule
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setOpenMenuId(null);
+                                        setCancelModal(booking.id);
+                                      }}
+                                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-[#222222] hover:text-red-300"
+                                    >
+                                      <XIcon className="w-3.5 h-3.5" />
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
                       </div>
                     </div>
                   </div>
@@ -224,21 +366,37 @@ export default function BookingsPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between bg-[#111111] border border-[#222222] rounded-lg px-4 py-2.5">
             <div className="flex items-center gap-2">
-              <select className="bg-[#1a1a1a] border border-[#282828] rounded-md px-2 py-1 text-sm text-white focus:outline-none">
-                <option>10</option>
-                <option>25</option>
-                <option>50</option>
+              <select
+                value={rowsPerPage}
+                onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                className="bg-[#1a1a1a] border border-[#282828] rounded-md px-2 py-1 text-sm text-white focus:outline-none"
+              >
+                {ROWS_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
               </select>
               <span className="text-sm text-gray-500">rows per page</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">
-                1-{bookings.length} of {bookings.length}
+                {filteredBookings.length > 0
+                  ? `${startRow}-${endRow} of ${filteredBookings.length}`
+                  : '0 results'}
               </span>
-              <button className="p-1 rounded hover:bg-[#1a1a1a] text-gray-500 transition-colors">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="p-1 rounded hover:bg-[#1a1a1a] text-gray-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <button className="p-1 rounded hover:bg-[#1a1a1a] text-gray-500 transition-colors">
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages}
+                className="p-1 rounded hover:bg-[#1a1a1a] text-gray-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              >
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -289,6 +447,14 @@ export default function BookingsPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Reschedule Modal */}
+      <RescheduleModal
+        isOpen={!!rescheduleBooking}
+        onClose={() => setRescheduleBooking(null)}
+        booking={rescheduleBooking}
+        onReschedule={handleReschedule}
+      />
     </div>
   );
 }
