@@ -17,15 +17,22 @@ if (resend) {
 async function sendEmail({ to, subject, html }) {
   if (!resend || !resendFrom) {
     console.log('⚠️  Skipping email send: missing RESEND_API_KEY or RESEND_FROM');
-    return;
+    return null;
   }
 
-  await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: resendFrom,
     to,
     subject,
     html,
   });
+
+  if (error) {
+    const details = typeof error === 'string' ? error : JSON.stringify(error);
+    throw new Error(`Resend API error: ${details}`);
+  }
+
+  return data?.id || null;
 }
 
 const formatDateTime = (dateStr) => {
@@ -132,7 +139,7 @@ async function sendBookingConfirmation({ bookerName, bookerEmail, hostName, even
 
   try {
     // Send to booker
-    await sendEmail({
+    const bookerEmailId = await sendEmail({
       to: bookerEmail,
       subject: `Booking Confirmed: ${eventTitle} with ${hostName}`,
       html,
@@ -148,7 +155,7 @@ async function sendBookingConfirmation({ bookerName, bookerEmail, hostName, even
       });
     }
 
-    console.log(`✅ Confirmation email sent to ${bookerEmail}`);
+    console.log(`✅ Confirmation email queued to ${bookerEmail}${bookerEmailId ? ` (id: ${bookerEmailId})` : ''}`);
   } catch (err) {
     console.error('⚠️  Failed to send confirmation email:', err.message);
   }
@@ -209,7 +216,7 @@ async function sendBookingCancellation({ bookerName, bookerEmail, hostName, even
   `;
 
   try {
-    await sendEmail({
+    const bookerEmailId = await sendEmail({
       to: bookerEmail,
       subject: `Booking Cancelled: ${eventTitle} with ${hostName}`,
       html,
@@ -223,7 +230,7 @@ async function sendBookingCancellation({ bookerName, bookerEmail, hostName, even
       });
     }
 
-    console.log(`✅ Cancellation email sent to ${bookerEmail}`);
+    console.log(`✅ Cancellation email queued to ${bookerEmail}${bookerEmailId ? ` (id: ${bookerEmailId})` : ''}`);
   } catch (err) {
     console.error('⚠️  Failed to send cancellation email:', err.message);
   }
@@ -301,7 +308,7 @@ async function sendBookingRescheduled({ bookerName, bookerEmail, hostName, event
   `;
 
   try {
-    await sendEmail({
+    const bookerEmailId = await sendEmail({
       to: bookerEmail,
       subject: `Booking Rescheduled: ${eventTitle} with ${hostName}`,
       html,
@@ -315,7 +322,7 @@ async function sendBookingRescheduled({ bookerName, bookerEmail, hostName, event
       });
     }
 
-    console.log(`✅ Reschedule email sent to ${bookerEmail}`);
+    console.log(`✅ Reschedule email queued to ${bookerEmail}${bookerEmailId ? ` (id: ${bookerEmailId})` : ''}`);
   } catch (err) {
     console.error('⚠️  Failed to send reschedule email:', err.message);
   }
