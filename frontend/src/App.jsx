@@ -4,12 +4,14 @@ import EventTypesPage from './pages/EventTypesPage';
 import BookingsPage from './pages/BookingsPage';
 import AvailabilityPage from './pages/AvailabilityPage';
 import PublicBookingPage from './pages/PublicBookingPage';
+import PublicProfilePage from './pages/PublicProfilePage';
 
 function App() {
   return (
     <Routes>
-      {/* Public booking page - no sidebar */}
+      {/* Public pages - no sidebar */}
       <Route path="/:username/:slug" element={<PublicBookingPage />} />
+      <Route path="/:username" element={<PublicProfilePage />} />
 
       {/* Admin pages - with sidebar layout */}
       <Route path="/" element={<Layout />}>

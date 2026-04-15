@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LinkIcon,
   CalendarDays,
@@ -19,14 +19,21 @@ const navItems = [
   { path: '/availability', label: 'Availability', icon: Clock },
 ];
 
-const bottomItems = [
-  { label: 'View public page', icon: ExternalLink },
-  { label: 'Copy public page link', icon: Copy },
-  { label: 'Settings', icon: Settings },
-];
-
 export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const navigate = useNavigate();
+
+  const handleViewPublicPage = () => {
+    window.open('/johndoe', '_blank');
+    setMobileOpen(false);
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(`${window.location.origin}/johndoe`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <>
@@ -98,15 +105,29 @@ export default function Sidebar() {
 
         {/* Bottom Links */}
         <div className="px-3 py-2 border-t border-[#222222]">
-          {bottomItems.map((item) => (
-            <button
-              key={item.label}
-              className="flex items-center gap-3 px-2 py-1.5 rounded-md text-sm text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-colors w-full mb-0.5"
-            >
-              <item.icon className="w-4 h-4 flex-shrink-0" />
-              {item.label}
-            </button>
-          ))}
+          <button
+            onClick={handleViewPublicPage}
+            className="flex items-center gap-3 px-2 py-1.5 rounded-md text-sm text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-colors w-full mb-0.5"
+          >
+            <ExternalLink className="w-4 h-4 flex-shrink-0" />
+            View public page
+          </button>
+
+          <button
+            onClick={handleCopyLink}
+            className="flex items-center gap-3 px-2 py-1.5 rounded-md text-sm text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-colors w-full mb-0.5"
+          >
+            <Copy className="w-4 h-4 flex-shrink-0" />
+            {copied ? 'Link copied!' : 'Copy public page link'}
+          </button>
+
+          <button
+            className="flex items-center gap-3 px-2 py-1.5 rounded-md text-sm text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-colors w-full mb-0.5"
+          >
+            <Settings className="w-4 h-4 flex-shrink-0" />
+            Settings
+          </button>
+
           <p className="text-[10px] text-gray-600 px-2 py-2 mt-1">
             © 2026 Cal.com, Inc.
           </p>

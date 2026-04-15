@@ -98,23 +98,26 @@ export default function EventTypesPage() {
 
   return (
     <div>
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+      {/* Page Header - matching Cal.com exactly */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">Event types</h1>
+          <h1 className="text-2xl font-bold text-white">Event types</h1>
           <p className="text-sm text-gray-400 mt-1">
             Configure different events for people to book on your calendar.
           </p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <div className="hidden sm:flex items-center gap-2 bg-[#1a1a1a] border border-[#282828] rounded-md px-3 py-1.5">
-            <Search className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-500">Search</span>
-          </div>
-          <Button onClick={openCreateModal}>
-            <Plus className="w-4 h-4 mr-1.5" />
+          <button className="flex items-center gap-2 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-3 py-2 text-sm text-gray-400 hover:text-white transition-colors">
+            <Search className="w-4 h-4" />
+            <span className="hidden sm:inline">Search</span>
+          </button>
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-1.5 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-3 py-2 text-sm font-medium text-white transition-colors"
+          >
+            <Plus className="w-4 h-4" />
             New
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -130,13 +133,16 @@ export default function EventTypesPage() {
           <p className="text-sm text-gray-400 mb-6">
             Create your first event type to start accepting bookings.
           </p>
-          <Button onClick={openCreateModal}>
-            <Plus className="w-4 h-4 mr-1.5" />
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-1.5 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-4 py-2 text-sm font-medium text-white transition-colors"
+          >
+            <Plus className="w-4 h-4" />
             New Event Type
-          </Button>
+          </button>
         </div>
       ) : (
-        <div className="bg-[#111111] border border-[#222222] rounded-lg overflow-hidden divide-y divide-[#222222]">
+        <div className="bg-[#111111] border border-[#222222] rounded-lg overflow-hidden divide-y divide-[#1e1e1e]">
           {eventTypes.map((et) => (
             <EventTypeCard
               key={et.id}

@@ -46,11 +46,26 @@ export default function PublicBookingPage() {
   const [booking, setBooking] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
+  // Fetch event type and auto-select today or next available day
   useEffect(() => {
     const fetchEventType = async () => {
       try {
         const res = await publicAPI.getEventType(username, slug);
         setEventType(res.data.data);
+
+        // Auto-select today's date or next weekday
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        let autoDate = new Date(today);
+
+        // If weekend, move to next Monday
+        if (dayOfWeek === 0) {
+          autoDate.setDate(autoDate.getDate() + 1);
+        } else if (dayOfWeek === 6) {
+          autoDate.setDate(autoDate.getDate() + 2);
+        }
+
+        setSelectedDate(autoDate);
       } catch (err) {
         setError('Event type not found');
       } finally {
@@ -60,6 +75,7 @@ export default function PublicBookingPage() {
     fetchEventType();
   }, [username, slug]);
 
+  // Fetch slots when date is selected
   useEffect(() => {
     if (selectedDate) {
       fetchSlots(selectedDate);
@@ -383,7 +399,6 @@ export default function PublicBookingPage() {
               <div className="flex flex-col lg:flex-row gap-6">
                 {/* Calendar */}
                 <div className="flex-1">
-                  {/* Month navigation */}
                   <div className="flex items-center justify-between mb-5">
                     <h3 className="text-base font-semibold text-white">
                       {MONTHS[currentMonth.getMonth()]}{' '}
@@ -406,7 +421,6 @@ export default function PublicBookingPage() {
                     </div>
                   </div>
 
-                  {/* Weekday headers */}
                   <div className="grid grid-cols-7 mb-2">
                     {WEEKDAYS.map((day) => (
                       <div key={day} className="text-center text-xs font-semibold text-gray-500 py-2">
@@ -415,7 +429,6 @@ export default function PublicBookingPage() {
                     ))}
                   </div>
 
-                  {/* Calendar grid */}
                   <div className="grid grid-cols-7 gap-1">
                     {calendarDays.map((day, i) => (
                       <div key={i} className="text-center">
@@ -452,7 +465,6 @@ export default function PublicBookingPage() {
                 {/* Time Slots */}
                 {selectedDate && (
                   <div className="lg:w-[220px] border-t lg:border-t-0 lg:border-l border-[#222222] pt-4 lg:pt-0 lg:pl-6">
-                    {/* Time slot header */}
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-sm font-semibold text-white">
                         {WEEKDAYS_SHORT[selectedDate.getDay()]}{' '}
@@ -569,7 +581,6 @@ export default function PublicBookingPage() {
         </div>
       </div>
 
-      {/* Cal.com Footer */}
       <p className="text-sm font-semibold text-gray-500 mt-6">Cal.com</p>
     </div>
   );
