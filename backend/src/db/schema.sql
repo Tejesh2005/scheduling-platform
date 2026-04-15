@@ -84,6 +84,19 @@ CREATE TABLE bookings (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS custom_questions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_type_id UUID NOT NULL REFERENCES event_types(id) ON DELETE CASCADE,
+    question_text VARCHAR(500) NOT NULL,
+    question_type VARCHAR(50) DEFAULT 'text' CHECK (question_type IN ('text', 'textarea', 'select')),
+    is_required BOOLEAN DEFAULT false,
+    options TEXT,
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_custom_questions_event ON custom_questions(event_type_id);
+
 CREATE INDEX idx_event_types_user_id ON event_types(user_id);
 CREATE INDEX idx_event_types_slug ON event_types(slug);
 CREATE INDEX idx_availability_slots_schedule ON availability_slots(schedule_id);

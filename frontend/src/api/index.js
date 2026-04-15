@@ -1,3 +1,5 @@
+// FILE: src/api/index.js
+
 import axios from 'axios';
 
 const API_BASE = '/api';
@@ -16,6 +18,11 @@ export const eventTypesAPI = {
   update: (id, data) => api.put(`/event-types/${id}`, data),
   toggle: (id) => api.patch(`/event-types/${id}/toggle`),
   delete: (id) => api.delete(`/event-types/${id}`),
+  // Custom questions
+  getQuestions: (id) => api.get(`/event-types/${id}/questions`),
+  addQuestion: (id, data) => api.post(`/event-types/${id}/questions`, data),
+  updateQuestion: (id, questionId, data) => api.put(`/event-types/${id}/questions/${questionId}`, data),
+  deleteQuestion: (id, questionId) => api.delete(`/event-types/${id}/questions/${questionId}`),
 };
 
 export const availabilityAPI = {

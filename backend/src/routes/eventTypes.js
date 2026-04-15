@@ -1,3 +1,5 @@
+// FILE: src/routes/eventTypes.js
+
 const express = require('express');
 const router = express.Router();
 const db = require('../db/connection');
@@ -54,12 +56,10 @@ router.post('/', async (req, res, next) => {
       max_booking_days,
     } = req.body;
 
-    // Validate required fields
     if (!title || !slug || !duration) {
       throw new AppError('Title, slug, and duration are required', 400);
     }
 
-    // Check if slug already exists
     const slugCheck = await db.query(
       'SELECT id FROM event_types WHERE slug = \$1 AND user_id = \$2',
       [slug, DEFAULT_USER_ID]
@@ -112,7 +112,6 @@ router.put('/:id', async (req, res, next) => {
       max_booking_days,
     } = req.body;
 
-    // Check if event type exists
     const existing = await db.query(
       'SELECT * FROM event_types WHERE id = \$1 AND user_id = \$2',
       [req.params.id, DEFAULT_USER_ID]
@@ -122,7 +121,6 @@ router.put('/:id', async (req, res, next) => {
       throw new AppError('Event type not found', 404);
     }
 
-    // Check slug uniqueness if slug is being changed
     if (slug && slug !== existing.rows[0].slug) {
       const slugCheck = await db.query(
         'SELECT id FROM event_types WHERE slug = \$1 AND user_id = \$2 AND id != \$3',
@@ -150,19 +148,9 @@ router.put('/:id', async (req, res, next) => {
        WHERE id = \$12 AND user_id = \$13
        RETURNING *`,
       [
-        title,
-        slug,
-        description,
-        duration,
-        location,
-        color,
-        is_active,
-        buffer_before,
-        buffer_after,
-        min_booking_notice,
-        max_booking_days,
-        req.params.id,
-        DEFAULT_USER_ID,
+        title, slug, description, duration, location, color,
+        is_active, buffer_before, buffer_after, min_booking_notice,
+        max_booking_days, req.params.id, DEFAULT_USER_ID,
       ]
     );
 
@@ -206,6 +194,82 @@ router.delete('/:id', async (req, res, next) => {
     }
 
     res.json({ success: true, message: 'Event type deleted' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---- Custom Questions ----
+
+// GET questions for an event type
+router.get('/:id/questions', async (req, res, next) => {
+  try {
+    const result = await db.query(
+      'SELECT * FROM custom_questions WHERE event_type_id = \$1 ORDER BY sort_order ASC',
+      [req.params.id]
+    );
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ADD a question
+router.post('/:id/questions', async (req, res, next) => {
+  try {
+    const { question_text, question_type, is_required, options } = req.body;
+
+    if (!question_text) {
+      throw new AppError('Question text is required', 400);
+    }
+
+    const result = await db.query(
+      `INSERT INTO custom_questions (event_type_id, question_text, question_type, is_required, options)
+       VALUES (\$1, \$2, \$3, \$4, \$5)
+       RETURNING *`,
+      [req.params.id, question_text, question_type || 'text', is_required || false, options || null]
+    );
+
+    res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// UPDATE a question
+router.put('/:id/questions/:questionId', async (req, res, next) => {
+  try {
+    const { question_text, question_type, is_required, options } = req.body;
+
+    const result = await db.query(
+      `UPDATE custom_questions 
+       SET question_text = COALESCE(\$1, question_text),
+           question_type = COALESCE(\$2, question_type),
+           is_required = COALESCE(\$3, is_required),
+           options = COALESCE(\$4, options)
+       WHERE id = \$5 AND event_type_id = \$6
+       RETURNING *`,
+      [question_text, question_type, is_required, options, req.params.questionId, req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      throw new AppError('Question not found', 404);
+    }
+
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE a question
+router.delete('/:id/questions/:questionId', async (req, res, next) => {
+  try {
+    await db.query(
+      'DELETE FROM custom_questions WHERE id = \$1 AND event_type_id = \$2',
+      [req.params.questionId, req.params.id]
+    );
+    res.json({ success: true, message: 'Question deleted' });
   } catch (err) {
     next(err);
   }

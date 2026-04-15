@@ -1,10 +1,13 @@
+// FILE: src/routes/public.js
+
 const express = require('express');
 const router = express.Router();
 const db = require('../db/connection');
 const { AppError } = require('../middleware/errorHandler');
 const { generateTimeSlots } = require('../utils/timeSlots');
+const { sendBookingConfirmation } = require('../utils/email');
 
-// GET event type info by username and slug
+// GET event type info by username and slug — REPLACE FIRST ROUTE ONLY
 router.get('/:username/:slug', async (req, res, next) => {
   try {
     const { username, slug } = req.params;
@@ -25,7 +28,19 @@ router.get('/:username/:slug', async (req, res, next) => {
       throw new AppError('Event type not found', 404);
     }
 
-    res.json({ success: true, data: result.rows[0] });
+    // Fetch custom questions
+    const questions = await db.query(
+      'SELECT * FROM custom_questions WHERE event_type_id = \$1 ORDER BY sort_order ASC',
+      [result.rows[0].id]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        ...result.rows[0],
+        custom_questions: questions.rows,
+      },
+    });
   } catch (err) {
     next(err);
   }
@@ -41,7 +56,6 @@ router.get('/:username/:slug/slots', async (req, res, next) => {
       throw new AppError('Date is required (YYYY-MM-DD)', 400);
     }
 
-    // Get event type
     const eventResult = await db.query(
       `SELECT et.*, u.id as uid, u.timezone as user_timezone
        FROM event_types et
@@ -56,7 +70,6 @@ router.get('/:username/:slug/slots', async (req, res, next) => {
 
     const eventType = eventResult.rows[0];
 
-    // Get default availability schedule
     const scheduleResult = await db.query(
       `SELECT * FROM availability_schedules 
        WHERE user_id = \$1 AND is_default = true
@@ -70,7 +83,6 @@ router.get('/:username/:slug/slots', async (req, res, next) => {
 
     const schedule = scheduleResult.rows[0];
 
-    // Check for date override
     const overrideResult = await db.query(
       `SELECT * FROM date_overrides 
        WHERE schedule_id = \$1 AND override_date = \$2`,
@@ -91,11 +103,9 @@ router.get('/:username/:slug/slots', async (req, res, next) => {
         eventType.buffer_after
       );
     } else {
-      // Get day of week for the requested date
       const requestedDate = new Date(date + 'T00:00:00');
       const dayOfWeek = requestedDate.getDay();
 
-      // Get availability slot for this day
       const slotResult = await db.query(
         `SELECT * FROM availability_slots 
          WHERE schedule_id = \$1 AND day_of_week = \$2 AND is_enabled = true`,
@@ -106,21 +116,14 @@ router.get('/:username/:slug/slots', async (req, res, next) => {
         return res.json({ success: true, data: [] });
       }
 
-      // Generate time slots for each availability window
       for (const slot of slotResult.rows) {
         const startStr = slot.start_time.substring(0, 5);
         const endStr = slot.end_time.substring(0, 5);
-        const slots = generateTimeSlots(
-          startStr,
-          endStr,
-          eventType.duration,
-          eventType.buffer_after
-        );
+        const slots = generateTimeSlots(startStr, endStr, eventType.duration, eventType.buffer_after);
         availableSlots.push(...slots);
       }
     }
 
-    // Remove already booked slots
     const bookingsResult = await db.query(
       `SELECT start_time, end_time FROM bookings 
        WHERE event_type_id = \$1 
@@ -134,12 +137,10 @@ router.get('/:username/:slug/slots', async (req, res, next) => {
       return `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
     });
 
-    // Filter out booked slots
     availableSlots = availableSlots.filter(
       (slot) => !bookedTimes.includes(slot.start)
     );
 
-    // Filter out past time slots if the date is today
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
@@ -163,12 +164,10 @@ router.post('/:username/:slug/book', async (req, res, next) => {
     const { username, slug } = req.params;
     const { booker_name, booker_email, start_time, end_time, notes } = req.body;
 
-    // Validate
     if (!booker_name || !booker_email || !start_time || !end_time) {
       throw new AppError('Name, email, start time, and end time are required', 400);
     }
 
-    // Get event type
     const eventResult = await db.query(
       `SELECT et.*, u.id as uid, u.name as user_name, u.timezone as user_timezone
        FROM event_types et
@@ -183,7 +182,6 @@ router.post('/:username/:slug/book', async (req, res, next) => {
 
     const eventType = eventResult.rows[0];
 
-    // Check for double booking
     const conflict = await db.query(
       `SELECT id FROM bookings 
        WHERE user_id = \$1 
@@ -196,7 +194,6 @@ router.post('/:username/:slug/book', async (req, res, next) => {
       throw new AppError('This time slot is no longer available', 409);
     }
 
-    // Create booking
     const result = await db.query(
       `INSERT INTO bookings (event_type_id, user_id, booker_name, booker_email, start_time, end_time, notes, status)
        VALUES (\$1, \$2, \$3, \$4, \$5, \$6, \$7, 'confirmed')
@@ -204,13 +201,24 @@ router.post('/:username/:slug/book', async (req, res, next) => {
       [eventType.id, eventType.uid, booker_name, booker_email, start_time, end_time, notes || null]
     );
 
-    // Return booking with event type details
     const booking = result.rows[0];
     booking.event_title = eventType.title;
     booking.event_duration = eventType.duration;
     booking.event_location = eventType.location;
     booking.host_name = eventType.user_name || 'John Doe';
     booking.user_timezone = eventType.user_timezone || 'Asia/Kolkata';
+
+    // Send confirmation email (non-blocking)
+    sendBookingConfirmation({
+      bookerName: booker_name,
+      bookerEmail: booker_email,
+      hostName: eventType.user_name || 'John Doe',
+      eventTitle: eventType.title,
+      startTime: start_time,
+      endTime: end_time,
+      location: eventType.location || 'Google Meet',
+      timezone: eventType.user_timezone || 'Asia/Kolkata',
+    }).catch(err => console.error('Email error:', err));
 
     res.status(201).json({ success: true, data: booking });
   } catch (err) {

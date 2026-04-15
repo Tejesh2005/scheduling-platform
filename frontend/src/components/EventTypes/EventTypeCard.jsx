@@ -1,6 +1,6 @@
 // FILE: src/components/EventTypes/EventTypeCard.jsx
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   ExternalLink,
   MoreHorizontal,
@@ -8,10 +8,11 @@ import {
   Trash2,
   Clock,
 } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import Toggle from '../UI/Toggle';
 import Tooltip from '../UI/Tooltip';
 
-// Custom chain link icon to match Cal.com exactly
+// Custom chain link icon
 function LinkIcon({ className }) {
   return (
     <svg
@@ -35,6 +36,8 @@ function LinkIcon({ className }) {
 export default function EventTypeCard({ eventType, onEdit, onDelete, onToggle }) {
   const [showMenu, setShowMenu] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+  const menuBtnRef = useRef(null);
 
   const bookingLink = `${window.location.origin}/johndoe/${eventType.slug}`;
 
@@ -46,6 +49,29 @@ export default function EventTypeCard({ eventType, onEdit, onDelete, onToggle })
 
   const handlePreview = () => {
     window.open(`/johndoe/${eventType.slug}`, '_blank');
+  };
+
+  const handleMenuToggle = () => {
+    if (!showMenu && menuBtnRef.current) {
+      const rect = menuBtnRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const menuHeight = 80; // approximate menu height
+
+      if (spaceBelow < menuHeight) {
+        // Open upward
+        setMenuPos({
+          top: rect.top - menuHeight,
+          left: rect.right - 176, // 176 = w-44 = 11rem
+        });
+      } else {
+        // Open downward
+        setMenuPos({
+          top: rect.bottom + 4,
+          left: rect.right - 176,
+        });
+      }
+    }
+    setShowMenu(!showMenu);
   };
 
   return (
@@ -108,52 +134,60 @@ export default function EventTypeCard({ eventType, onEdit, onDelete, onToggle })
               </button>
             </Tooltip>
 
-            {/* Three dot menu */}
-            <Tooltip text="More">
-              <div className="relative">
-                <button
-                  onClick={() => setShowMenu(!showMenu)}
-                  className="w-[36px] h-[32px] flex items-center justify-center bg-transparent hover:bg-[#1c1c1c] text-[#777777] hover:text-white transition-colors rounded-r-lg"
-                >
-                  <MoreHorizontal className="w-[15px] h-[15px] stroke-[2.5]" />
-                </button>
-
-                {showMenu && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setShowMenu(false)}
-                    />
-                    <div className="absolute right-0 top-10 z-20 w-44 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow-2xl py-1 overflow-hidden">
-                      <button
-                        onClick={() => {
-                          setShowMenu(false);
-                          onEdit(eventType);
-                        }}
-                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] text-[#cccccc] hover:bg-[#252525] hover:text-white transition-colors"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                        Edit
-                      </button>
-                      <div className="border-t border-[#2a2a2a]" />
-                      <button
-                        onClick={() => {
-                          setShowMenu(false);
-                          onDelete(eventType.id);
-                        }}
-                        className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] text-red-400 hover:bg-[#252525] hover:text-red-300 transition-colors"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        Delete
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </Tooltip>
+            {/* Three dot menu — NO tooltip */}
+            <div className="relative">
+              <button
+                ref={menuBtnRef}
+                onClick={handleMenuToggle}
+                className="w-[36px] h-[32px] flex items-center justify-center bg-transparent hover:bg-[#1c1c1c] text-[#777777] hover:text-white transition-colors rounded-r-lg"
+              >
+                <MoreHorizontal className="w-[15px] h-[15px] stroke-[2.5]" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Dropdown menu — rendered as portal */}
+      {showMenu &&
+        createPortal(
+          <>
+            <div
+              className="fixed inset-0 z-[9998]"
+              onClick={() => setShowMenu(false)}
+            />
+            <div
+              className="fixed z-[9999] w-44 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow-2xl py-1 overflow-hidden"
+              style={{
+                top: `${menuPos.top}px`,
+                left: `${menuPos.left}px`,
+              }}
+            >
+              <button
+                onClick={() => {
+                  setShowMenu(false);
+                  onEdit(eventType);
+                }}
+                className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] text-[#cccccc] hover:bg-[#252525] hover:text-white transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                Edit
+              </button>
+              <div className="border-t border-[#2a2a2a]" />
+              <button
+                onClick={() => {
+                  setShowMenu(false);
+                  onDelete(eventType.id);
+                }}
+                className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] text-red-400 hover:bg-[#252525] hover:text-red-300 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete
+              </button>
+            </div>
+          </>,
+          document.body
+        )}
     </div>
   );
 }

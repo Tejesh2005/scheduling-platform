@@ -1,3 +1,5 @@
+// FILE: src/components/Layout/Sidebar.jsx
+
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
@@ -9,8 +11,6 @@ import {
   ExternalLink,
   Copy,
   Settings,
-  Search,
-  ChevronDown,
 } from 'lucide-react';
 
 const navItems = [
@@ -69,17 +69,13 @@ export default function Sidebar() {
         `}
       >
         {/* User Profile Top */}
-        <div className="px-3 py-3 flex items-center justify-between">
-          <button className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[#1a1a1a] transition-colors w-full">
+        <div className="px-3 py-3">
+          <div className="flex items-center gap-2 px-2 py-1.5">
             <div className="w-7 h-7 rounded-full bg-green-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
               J
             </div>
             <span className="text-sm font-medium text-white truncate">John Doe</span>
-            <ChevronDown className="w-3.5 h-3.5 text-gray-500 ml-auto flex-shrink-0" />
-          </button>
-          <button className="p-1.5 rounded-md hover:bg-[#1a1a1a] text-gray-500 transition-colors">
-            <Search className="w-4 h-4" />
-          </button>
+          </div>
         </div>
 
         {/* Navigation */}
