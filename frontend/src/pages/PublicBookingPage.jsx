@@ -204,7 +204,7 @@ export default function PublicBookingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="animate-pulse text-center">
           <div className="h-8 bg-gray-200 rounded w-48 mx-auto mb-4" />
           <div className="h-4 bg-gray-200 rounded w-32 mx-auto" />
@@ -215,7 +215,7 @@ export default function PublicBookingPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Calendar className="w-8 h-8 text-red-500" />
@@ -229,7 +229,7 @@ export default function PublicBookingPage() {
 
   if (step === 'confirmation' && confirmedBooking) {
     return (
-      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-4 py-8">
+      <div className="min-h-screen bg-[#f8f8f8] flex items-center justify-center px-4 py-8">
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm max-w-md w-full p-6 sm:p-8 text-center">
           <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
             <Check className="w-7 h-7 text-green-600" />
@@ -240,7 +240,7 @@ export default function PublicBookingPage() {
           <p className="text-sm text-gray-500 mb-8">
             We sent an email with a calendar invitation with the details to everyone.
           </p>
-          <div className="bg-gray-50 rounded-lg p-4 sm:p-5 text-left space-y-3">
+          <div className="bg-gray-50 rounded-lg p-4 sm:p-5 text-left space-y-3 border border-gray-100">
             <div className="flex items-start gap-3">
               <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
               <div className="min-w-0">
@@ -279,7 +279,7 @@ export default function PublicBookingPage() {
               <div>
                 <p className="text-xs text-gray-500">Timezone</p>
                 <p className="text-sm font-medium text-gray-900">
-                  {eventType.user_timezone || 'America/New_York'}
+                  {eventType.user_timezone || 'Asia/Kolkata'}
                 </p>
               </div>
             </div>
@@ -300,7 +300,7 @@ export default function PublicBookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-4 py-6 sm:py-8">
+    <div className="min-h-screen bg-[#f8f8f8] flex items-center justify-center px-4 py-6 sm:py-8">
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm max-w-4xl w-full overflow-hidden">
         <div className="flex flex-col md:flex-row">
 
@@ -337,7 +337,7 @@ export default function PublicBookingPage() {
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Globe className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                {eventType.user_timezone || 'America/New_York'}
+                {eventType.user_timezone || 'Asia/Kolkata'}
               </div>
 
               {step === 'form' && selectedDate && selectedSlot && (
@@ -385,13 +385,13 @@ export default function PublicBookingPage() {
                         disabled={isPrevMonthDisabled()}
                         className="p-1.5 rounded-md hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                       >
-                        <ChevronLeft className="w-4 h-4" />
+                        <ChevronLeft className="w-4 h-4 text-gray-600" />
                       </button>
                       <button
                         onClick={nextMonth}
                         className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
                       >
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-4 h-4 text-gray-600" />
                       </button>
                     </div>
                   </div>
@@ -483,7 +483,7 @@ export default function PublicBookingPage() {
                       placeholder="John Smith"
                       value={formData.booker_name}
                       onChange={(e) => setFormData((prev) => ({ ...prev, booker_name: e.target.value }))}
-                      className={`block w-full rounded-md border px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent ${
+                      className={`block w-full rounded-md border px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent ${
                         formErrors.booker_name ? 'border-red-500' : 'border-gray-300'
                       }`}
                     />
@@ -499,7 +499,7 @@ export default function PublicBookingPage() {
                       placeholder="john@example.com"
                       value={formData.booker_email}
                       onChange={(e) => setFormData((prev) => ({ ...prev, booker_email: e.target.value }))}
-                      className={`block w-full rounded-md border px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent ${
+                      className={`block w-full rounded-md border px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent ${
                         formErrors.booker_email ? 'border-red-500' : 'border-gray-300'
                       }`}
                     />
@@ -515,7 +515,7 @@ export default function PublicBookingPage() {
                       rows={3}
                       value={formData.notes}
                       onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent"
+                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent"
                     />
                   </div>
 

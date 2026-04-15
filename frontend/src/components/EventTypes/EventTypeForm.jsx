@@ -116,11 +116,11 @@ export default function EventTypeForm({ eventType, onSubmit, onCancel, loading }
       />
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label className="block text-sm font-medium text-gray-300 mb-1.5">
           Description
         </label>
         <textarea
-          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent"
+          className="block w-full rounded-md border border-[#333333] bg-[#1a1a1a] px-3 py-2 text-sm text-white shadow-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
           rows={3}
           placeholder="A brief description of this event type..."
           value={form.description}
@@ -128,7 +128,7 @@ export default function EventTypeForm({ eventType, onSubmit, onCancel, loading }
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Select
           label="Duration"
           options={durationOptions}
@@ -152,7 +152,7 @@ export default function EventTypeForm({ eventType, onSubmit, onCancel, loading }
         onChange={(e) => handleChange('color', e.target.value)}
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input
           label="Buffer Before (min)"
           type="number"
@@ -170,7 +170,7 @@ export default function EventTypeForm({ eventType, onSubmit, onCancel, loading }
       </div>
 
       {/* Actions */}
-      <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+      <div className="flex justify-end gap-3 pt-4 border-t border-[#222222]">
         <Button type="button" variant="secondary" onClick={onCancel}>
           Cancel
         </Button>

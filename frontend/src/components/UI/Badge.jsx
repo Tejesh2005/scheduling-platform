@@ -1,10 +1,10 @@
 export default function Badge({ children, variant = 'default', className = '' }) {
   const variants = {
-    default: 'bg-gray-100 text-gray-700',
-    success: 'bg-green-50 text-green-700 border border-green-200',
-    warning: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
-    danger: 'bg-red-50 text-red-700 border border-red-200',
-    info: 'bg-blue-50 text-blue-700 border border-blue-200',
+    default: 'bg-[#1a1a1a] text-gray-400 border border-[#333333]',
+    success: 'bg-green-900/30 text-green-400 border border-green-800/50',
+    warning: 'bg-yellow-900/30 text-yellow-400 border border-yellow-800/50',
+    danger: 'bg-red-900/30 text-red-400 border border-red-800/50',
+    info: 'bg-blue-900/30 text-blue-400 border border-blue-800/50',
   };
 
   return (

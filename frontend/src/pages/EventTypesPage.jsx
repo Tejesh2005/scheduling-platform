@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus, Calendar, Search } from 'lucide-react';
 import { eventTypesAPI } from '../api';
 import Button from '../components/UI/Button';
 import Modal from '../components/UI/Modal';
@@ -88,10 +88,10 @@ export default function EventTypesPage() {
   if (loading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="h-8 bg-gray-200 rounded w-48" />
-        <div className="h-24 bg-gray-200 rounded" />
-        <div className="h-24 bg-gray-200 rounded" />
-        <div className="h-24 bg-gray-200 rounded" />
+        <div className="h-8 bg-[#1a1a1a] rounded w-48" />
+        <div className="h-20 bg-[#1a1a1a] rounded" />
+        <div className="h-20 bg-[#1a1a1a] rounded" />
+        <div className="h-20 bg-[#1a1a1a] rounded" />
       </div>
     );
   }
@@ -99,38 +99,44 @@ export default function EventTypesPage() {
   return (
     <div>
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Event Types</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Create events to share for people to book on your calendar.
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Event types</h1>
+          <p className="text-sm text-gray-400 mt-1">
+            Configure different events for people to book on your calendar.
           </p>
         </div>
-        <Button onClick={openCreateModal} className="self-start sm:self-auto">
-          <Plus className="w-4 h-4 mr-2" />
-          New Event Type
-        </Button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="hidden sm:flex items-center gap-2 bg-[#1a1a1a] border border-[#282828] rounded-md px-3 py-1.5">
+            <Search className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-500">Search</span>
+          </div>
+          <Button onClick={openCreateModal}>
+            <Plus className="w-4 h-4 mr-1.5" />
+            New
+          </Button>
+        </div>
       </div>
 
       {/* Event Types List */}
       {eventTypes.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-8 sm:p-12 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Calendar className="w-8 h-8 text-gray-400" />
+        <div className="bg-[#111111] border border-[#222222] rounded-lg p-8 sm:p-12 text-center">
+          <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4">
+            <Calendar className="w-8 h-8 text-gray-500" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold text-white mb-2">
             No event types yet
           </h3>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-gray-400 mb-6">
             Create your first event type to start accepting bookings.
           </p>
           <Button onClick={openCreateModal}>
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4 mr-1.5" />
             New Event Type
           </Button>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-200">
+        <div className="bg-[#111111] border border-[#222222] rounded-lg overflow-hidden divide-y divide-[#222222]">
           {eventTypes.map((et) => (
             <EventTypeCard
               key={et.id}
@@ -170,7 +176,7 @@ export default function EventTypesPage() {
         title="Delete Event Type"
         size="sm"
       >
-        <p className="text-sm text-gray-600 mb-6">
+        <p className="text-sm text-gray-400 mb-6">
           Are you sure you want to delete this event type? This action cannot be
           undone and will cancel all upcoming bookings.
         </p>
