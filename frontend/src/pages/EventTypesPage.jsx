@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Link as LinkIcon, Calendar } from 'lucide-react';
+import { Plus, Calendar } from 'lucide-react';
 import { eventTypesAPI } from '../api';
 import Button from '../components/UI/Button';
 import Modal from '../components/UI/Modal';
@@ -99,14 +99,14 @@ export default function EventTypesPage() {
   return (
     <div>
       {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Event Types</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Event Types</h1>
           <p className="text-sm text-gray-500 mt-1">
             Create events to share for people to book on your calendar.
           </p>
         </div>
-        <Button onClick={openCreateModal}>
+        <Button onClick={openCreateModal} className="self-start sm:self-auto">
           <Plus className="w-4 h-4 mr-2" />
           New Event Type
         </Button>
@@ -114,7 +114,7 @@ export default function EventTypesPage() {
 
       {/* Event Types List */}
       {eventTypes.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+        <div className="bg-white border border-gray-200 rounded-lg p-8 sm:p-12 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Calendar className="w-8 h-8 text-gray-400" />
           </div>

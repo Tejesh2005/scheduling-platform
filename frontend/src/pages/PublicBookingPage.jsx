@@ -26,17 +26,14 @@ export default function PublicBookingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Calendar state
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // Time slots
   const [slots, setSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
 
-  // Booking form
-  const [step, setStep] = useState('calendar'); // 'calendar' | 'form' | 'confirmation'
+  const [step, setStep] = useState('calendar');
   const [formData, setFormData] = useState({
     booker_name: '',
     booker_email: '',
@@ -46,7 +43,6 @@ export default function PublicBookingPage() {
   const [booking, setBooking] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
-  // Fetch event type info
   useEffect(() => {
     const fetchEventType = async () => {
       try {
@@ -61,7 +57,6 @@ export default function PublicBookingPage() {
     fetchEventType();
   }, [username, slug]);
 
-  // Fetch slots when date is selected
   useEffect(() => {
     if (selectedDate) {
       fetchSlots(selectedDate);
@@ -76,14 +71,12 @@ export default function PublicBookingPage() {
       const res = await publicAPI.getSlots(username, slug, dateStr);
       setSlots(res.data.data);
     } catch (err) {
-      console.error('Error fetching slots:', err);
       setSlots([]);
     } finally {
       setSlotsLoading(false);
     }
   };
 
-  // Calendar helpers
   const formatDateStr = (date) => {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -158,16 +151,13 @@ export default function PublicBookingPage() {
     );
   };
 
-  // Handle time slot selection
   const handleSlotSelect = (slot) => {
     setSelectedSlot(slot);
     setStep('form');
   };
 
-  // Handle form submission
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
-
     const errors = {};
     if (!formData.booker_name.trim()) errors.booker_name = 'Name is required';
     if (!formData.booker_email.trim()) errors.booker_email = 'Email is required';
@@ -212,7 +202,6 @@ export default function PublicBookingPage() {
     return `${hour12}:${String(m).padStart(2, '0')} ${ampm}`;
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center">
@@ -224,51 +213,45 @@ export default function PublicBookingPage() {
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center">
+      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-4">
         <div className="text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Calendar className="w-8 h-8 text-red-500" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">Page Not Found</h1>
-          <p className="text-gray-500">This event type doesn't exist or has been disabled.</p>
+          <p className="text-gray-500">This event type does not exist or has been disabled.</p>
         </div>
       </div>
     );
   }
 
-  // Confirmation step
   if (step === 'confirmation' && confirmedBooking) {
     return (
-      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-4">
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm max-w-md w-full p-8 text-center">
+      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-4 py-8">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm max-w-md w-full p-6 sm:p-8 text-center">
           <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
             <Check className="w-7 h-7 text-green-600" />
           </div>
-
           <h1 className="text-xl font-bold text-gray-900 mb-1">
             This meeting is scheduled
           </h1>
           <p className="text-sm text-gray-500 mb-8">
             We sent an email with a calendar invitation with the details to everyone.
           </p>
-
-          <div className="bg-gray-50 rounded-lg p-5 text-left space-y-3">
+          <div className="bg-gray-50 rounded-lg p-4 sm:p-5 text-left space-y-3">
             <div className="flex items-start gap-3">
-              <User className="w-4 h-4 text-gray-400 mt-0.5" />
-              <div>
+              <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+              <div className="min-w-0">
                 <p className="text-xs text-gray-500">What</p>
-                <p className="text-sm font-medium text-gray-900">
-                  {eventType.title} between {eventType.user_name || 'John Doe'} and{' '}
-                  {confirmedBooking.booker_name}
+                <p className="text-sm font-medium text-gray-900 break-words">
+                  {eventType.title} between {eventType.user_name || 'John Doe'} and {confirmedBooking.booker_name}
                 </p>
               </div>
             </div>
-
             <div className="flex items-start gap-3">
-              <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
+              <Calendar className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-xs text-gray-500">When</p>
                 <p className="text-sm font-medium text-gray-900">
@@ -284,19 +267,15 @@ export default function PublicBookingPage() {
                 </p>
               </div>
             </div>
-
             <div className="flex items-start gap-3">
-              <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+              <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-xs text-gray-500">Where</p>
-                <p className="text-sm font-medium text-gray-900">
-                  {eventType.location}
-                </p>
+                <p className="text-sm font-medium text-gray-900">{eventType.location}</p>
               </div>
             </div>
-
             <div className="flex items-start gap-3">
-              <Globe className="w-4 h-4 text-gray-400 mt-0.5" />
+              <Globe className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-xs text-gray-500">Timezone</p>
                 <p className="text-sm font-medium text-gray-900">
@@ -310,11 +289,9 @@ export default function PublicBookingPage() {
     );
   }
 
-  // Calendar + form view
   const daysInMonth = getDaysInMonth(currentMonth);
   const firstDay = getFirstDayOfMonth(currentMonth);
   const calendarDays = [];
-
   for (let i = 0; i < firstDay; i++) {
     calendarDays.push(null);
   }
@@ -323,11 +300,12 @@ export default function PublicBookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-4 py-6 sm:py-8">
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm max-w-4xl w-full overflow-hidden">
         <div className="flex flex-col md:flex-row">
+
           {/* Left Panel - Event Info */}
-          <div className="w-full md:w-[280px] border-b md:border-b-0 md:border-r border-gray-200 p-6">
+          <div className="w-full md:w-[280px] border-b md:border-b-0 md:border-r border-gray-200 p-5 sm:p-6">
             {step === 'form' && (
               <button
                 onClick={() => {
@@ -341,36 +319,30 @@ export default function PublicBookingPage() {
               </button>
             )}
 
-            {/* User avatar */}
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold mb-3">
               {(eventType.user_name || 'J')[0]}
             </div>
 
-            <p className="text-sm text-gray-500">
-              {eventType.user_name || 'John Doe'}
-            </p>
-            <h1 className="text-xl font-bold text-gray-900 mt-1 mb-4">
-              {eventType.title}
-            </h1>
+            <p className="text-sm text-gray-500">{eventType.user_name || 'John Doe'}</p>
+            <h1 className="text-xl font-bold text-gray-900 mt-1 mb-4">{eventType.title}</h1>
 
             <div className="space-y-2.5">
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Clock className="w-4 h-4 text-gray-400" />
+                <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 {eventType.duration} min
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <MapPin className="w-4 h-4 text-gray-400" />
+                <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 {eventType.location}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Globe className="w-4 h-4 text-gray-400" />
+                <Globe className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 {eventType.user_timezone || 'America/New_York'}
               </div>
 
-              {/* Show selected date/time when on form step */}
               {step === 'form' && selectedDate && selectedSlot && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 pt-2 border-t border-gray-100 mt-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
+                <div className="flex items-start gap-2 text-sm text-gray-600 pt-2 border-t border-gray-100 mt-2">
+                  <Calendar className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="font-medium text-gray-900">
                       {selectedDate.toLocaleDateString('en-US', {
@@ -380,10 +352,7 @@ export default function PublicBookingPage() {
                         year: 'numeric',
                       })}
                     </p>
-                    <p>
-                      {formatTimeLabel(selectedSlot.start)} -{' '}
-                      {formatTimeLabel(selectedSlot.end)}
-                    </p>
+                    <p>{formatTimeLabel(selectedSlot.start)} - {formatTimeLabel(selectedSlot.end)}</p>
                   </div>
                 </div>
               )}
@@ -397,16 +366,15 @@ export default function PublicBookingPage() {
           </div>
 
           {/* Right Panel */}
-          <div className="flex-1 p-6">
+          <div className="flex-1 p-5 sm:p-6">
             {step === 'calendar' && (
-              <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex flex-col lg:flex-row gap-6">
                 {/* Calendar */}
                 <div className="flex-1">
                   <h2 className="text-sm font-semibold text-gray-900 mb-4">
                     Select a Date & Time
                   </h2>
 
-                  {/* Month navigation */}
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-gray-900">
                       {MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
@@ -428,19 +396,14 @@ export default function PublicBookingPage() {
                     </div>
                   </div>
 
-                  {/* Weekday headers */}
                   <div className="grid grid-cols-7 mb-1">
                     {WEEKDAYS.map((day) => (
-                      <div
-                        key={day}
-                        className="text-center text-xs font-medium text-gray-500 py-2"
-                      >
+                      <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
                         {day}
                       </div>
                     ))}
                   </div>
 
-                  {/* Calendar grid */}
                   <div className="grid grid-cols-7">
                     {calendarDays.map((day, i) => (
                       <div key={i} className="text-center py-1">
@@ -448,7 +411,7 @@ export default function PublicBookingPage() {
                           <button
                             onClick={() => handleDateClick(day)}
                             disabled={isPastDay(day)}
-                            className={`w-10 h-10 rounded-full text-sm font-medium transition-all
+                            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full text-sm font-medium transition-all
                               ${isPastDay(day)
                                 ? 'text-gray-300 cursor-not-allowed'
                                 : isSelectedDay(day)
@@ -471,7 +434,7 @@ export default function PublicBookingPage() {
 
                 {/* Time Slots */}
                 {selectedDate && (
-                  <div className="md:w-[200px] md:border-l md:border-gray-200 md:pl-6">
+                  <div className="lg:w-[200px] border-t lg:border-t-0 lg:border-l border-gray-200 pt-4 lg:pt-0 lg:pl-6">
                     <h3 className="text-sm font-semibold text-gray-900 mb-3">
                       {selectedDate.toLocaleDateString('en-US', {
                         weekday: 'short',
@@ -483,23 +446,18 @@ export default function PublicBookingPage() {
                     {slotsLoading ? (
                       <div className="space-y-2">
                         {[1, 2, 3, 4, 5].map((i) => (
-                          <div
-                            key={i}
-                            className="h-10 bg-gray-100 rounded-md animate-pulse"
-                          />
+                          <div key={i} className="h-10 bg-gray-100 rounded-md animate-pulse" />
                         ))}
                       </div>
                     ) : slots.length === 0 ? (
-                      <p className="text-sm text-gray-400 text-center py-4">
-                        No available times
-                      </p>
+                      <p className="text-sm text-gray-400 text-center py-4">No available times</p>
                     ) : (
-                      <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-2 max-h-[340px] overflow-y-auto pr-1">
                         {slots.map((slot) => (
                           <button
                             key={slot.start}
                             onClick={() => handleSlotSelect(slot)}
-                            className="w-full py-2.5 px-3 text-sm font-medium border border-gray-200 rounded-md 
+                            className="w-full py-2.5 px-3 text-sm font-medium border border-gray-200 rounded-md
                               text-[#111827] hover:border-[#111827] hover:bg-[#111827] hover:text-white
                               transition-all text-center"
                           >
@@ -516,79 +474,47 @@ export default function PublicBookingPage() {
             {/* Booking Form */}
             {step === 'form' && (
               <div>
-                <h2 className="text-sm font-semibold text-gray-900 mb-5">
-                  Enter Details
-                </h2>
-
+                <h2 className="text-sm font-semibold text-gray-900 mb-5">Enter Details</h2>
                 <form onSubmit={handleBookingSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Your Name *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Your Name *</label>
                     <input
                       type="text"
                       placeholder="John Smith"
                       value={formData.booker_name}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          booker_name: e.target.value,
-                        }))
-                      }
+                      onChange={(e) => setFormData((prev) => ({ ...prev, booker_name: e.target.value }))}
                       className={`block w-full rounded-md border px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent ${
-                        formErrors.booker_name
-                          ? 'border-red-500'
-                          : 'border-gray-300'
+                        formErrors.booker_name ? 'border-red-500' : 'border-gray-300'
                       }`}
                     />
                     {formErrors.booker_name && (
-                      <p className="mt-1 text-xs text-red-500">
-                        {formErrors.booker_name}
-                      </p>
+                      <p className="mt-1 text-xs text-red-500">{formErrors.booker_name}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Email Address *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address *</label>
                     <input
                       type="email"
                       placeholder="john@example.com"
                       value={formData.booker_email}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          booker_email: e.target.value,
-                        }))
-                      }
+                      onChange={(e) => setFormData((prev) => ({ ...prev, booker_email: e.target.value }))}
                       className={`block w-full rounded-md border px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent ${
-                        formErrors.booker_email
-                          ? 'border-red-500'
-                          : 'border-gray-300'
+                        formErrors.booker_email ? 'border-red-500' : 'border-gray-300'
                       }`}
                     />
                     {formErrors.booker_email && (
-                      <p className="mt-1 text-xs text-red-500">
-                        {formErrors.booker_email}
-                      </p>
+                      <p className="mt-1 text-xs text-red-500">{formErrors.booker_email}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Additional Notes
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Additional Notes</label>
                     <textarea
                       placeholder="Please share anything that will help prepare for our meeting..."
                       rows={3}
                       value={formData.notes}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          notes: e.target.value,
-                        }))
-                      }
+                      onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
                       className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent"
                     />
                   </div>

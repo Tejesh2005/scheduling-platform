@@ -8,6 +8,7 @@ import Modal from '../components/UI/Modal';
 import Input from '../components/UI/Input';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const TIME_OPTIONS = [];
 for (let h = 0; h < 24; h++) {
@@ -133,31 +134,31 @@ export default function AvailabilityPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Availability</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Availability</h1>
           <p className="text-sm text-gray-500 mt-1">
             Configure times when you are available for bookings.
           </p>
         </div>
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={saving} className="self-start sm:self-auto">
           {saving ? 'Saving...' : 'Save'}
         </Button>
       </div>
 
       {/* Schedule info */}
       <div className="bg-white border border-gray-200 rounded-lg mb-6">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center gap-4">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-2 flex-1">
-              <Clock className="w-4 h-4 text-gray-500" />
+              <Clock className="w-4 h-4 text-gray-500 flex-shrink-0" />
               <input
                 type="text"
                 value={activeSchedule.name}
                 onChange={(e) =>
                   setActiveSchedule((prev) => ({ ...prev, name: e.target.value }))
                 }
-                className="text-sm font-semibold text-gray-900 border-none focus:outline-none focus:ring-0 bg-transparent"
+                className="text-sm font-semibold text-gray-900 border-none focus:outline-none focus:ring-0 bg-transparent w-full"
               />
             </div>
             <Select
@@ -166,7 +167,7 @@ export default function AvailabilityPage() {
               onChange={(e) =>
                 setActiveSchedule((prev) => ({ ...prev, timezone: e.target.value }))
               }
-              className="w-72"
+              className="w-full sm:w-72"
             />
           </div>
         </div>
@@ -176,31 +177,34 @@ export default function AvailabilityPage() {
           {activeSchedule.slots.map((slot) => (
             <div
               key={slot.id}
-              className="flex items-center gap-4 px-6 py-3.5"
+              className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 sm:px-6 py-3.5"
             >
-              <div className="w-8">
-                <Toggle
-                  enabled={slot.is_enabled}
-                  onChange={(val) => handleSlotChange(slot.id, 'is_enabled', val)}
-                />
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-8 flex-shrink-0">
+                  <Toggle
+                    enabled={slot.is_enabled}
+                    onChange={(val) => handleSlotChange(slot.id, 'is_enabled', val)}
+                  />
+                </div>
+
+                <span
+                  className={`w-20 sm:w-28 text-sm font-medium ${
+                    slot.is_enabled ? 'text-gray-900' : 'text-gray-400'
+                  }`}
+                >
+                  <span className="hidden sm:inline">{DAYS[slot.day_of_week]}</span>
+                  <span className="sm:hidden">{DAYS_SHORT[slot.day_of_week]}</span>
+                </span>
               </div>
 
-              <span
-                className={`w-28 text-sm font-medium ${
-                  slot.is_enabled ? 'text-gray-900' : 'text-gray-400'
-                }`}
-              >
-                {DAYS[slot.day_of_week]}
-              </span>
-
               {slot.is_enabled ? (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 ml-11 sm:ml-0">
                   <select
                     value={slot.start_time?.substring(0, 5)}
                     onChange={(e) =>
                       handleSlotChange(slot.id, 'start_time', e.target.value)
                     }
-                    className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827]"
+                    className="rounded-md border border-gray-300 px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827] w-[110px]"
                   >
                     {TIME_OPTIONS.map((t) => (
                       <option key={t.value} value={t.value}>
@@ -216,7 +220,7 @@ export default function AvailabilityPage() {
                     onChange={(e) =>
                       handleSlotChange(slot.id, 'end_time', e.target.value)
                     }
-                    className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827]"
+                    className="rounded-md border border-gray-300 px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827] w-[110px]"
                   >
                     {TIME_OPTIONS.map((t) => (
                       <option key={t.value} value={t.value}>
@@ -226,7 +230,7 @@ export default function AvailabilityPage() {
                   </select>
                 </div>
               ) : (
-                <span className="text-sm text-gray-400">Unavailable</span>
+                <span className="text-sm text-gray-400 ml-11 sm:ml-0">Unavailable</span>
               )}
             </div>
           ))}
@@ -235,7 +239,7 @@ export default function AvailabilityPage() {
 
       {/* Date Overrides */}
       <div className="bg-white border border-gray-200 rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-gray-900">
               Date Overrides
@@ -248,6 +252,7 @@ export default function AvailabilityPage() {
             variant="secondary"
             size="sm"
             onClick={() => setShowOverrideModal(true)}
+            className="self-start sm:self-auto"
           >
             <Plus className="w-3.5 h-3.5 mr-1.5" />
             Add Override
@@ -259,18 +264,18 @@ export default function AvailabilityPage() {
             {activeSchedule.overrides.map((override) => (
               <div
                 key={override.id}
-                className="flex items-center justify-between px-6 py-3"
+                className="flex items-center justify-between px-4 sm:px-6 py-3"
               >
-                <div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
                   <span className="text-sm font-medium text-gray-900">
                     {new Date(override.override_date).toLocaleDateString('en-US', {
-                      weekday: 'long',
+                      weekday: 'short',
                       year: 'numeric',
-                      month: 'long',
+                      month: 'short',
                       day: 'numeric',
                     })}
                   </span>
-                  <span className="text-sm text-gray-500 ml-3">
+                  <span className="text-sm text-gray-500">
                     {override.is_available
                       ? `${override.start_time?.substring(0, 5)} - ${override.end_time?.substring(0, 5)}`
                       : 'Unavailable'}

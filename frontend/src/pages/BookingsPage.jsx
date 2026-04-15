@@ -72,7 +72,6 @@ export default function BookingsPage() {
     });
   };
 
-  // Group bookings by date
   const groupedBookings = bookings.reduce((groups, booking) => {
     const dateKey = formatDate(booking.start_time);
     if (!groups[dateKey]) {
@@ -101,7 +100,7 @@ export default function BookingsPage() {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Bookings</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Bookings</h1>
         <p className="text-sm text-gray-500 mt-1">
           See upcoming and past events booked through your event type links.
         </p>
@@ -109,7 +108,7 @@ export default function BookingsPage() {
 
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-6">
-        <nav className="flex gap-6">
+        <nav className="flex gap-4 sm:gap-6">
           {TABS.map((tab) => (
             <button
               key={tab.key}
@@ -134,7 +133,7 @@ export default function BookingsPage() {
           <div className="h-24 bg-gray-200 rounded" />
         </div>
       ) : bookings.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+        <div className="bg-white border border-gray-200 rounded-lg p-8 sm:p-12 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Calendar className="w-8 h-8 text-gray-400" />
           </div>
@@ -158,11 +157,11 @@ export default function BookingsPage() {
               </h3>
               <div className="bg-white border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-100">
                 {dateBookings.map((booking) => (
-                  <div key={booking.id} className="px-6 py-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex gap-4">
+                  <div key={booking.id} className="px-4 sm:px-6 py-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                         {/* Time */}
-                        <div className="text-sm min-w-[140px]">
+                        <div className="text-sm sm:min-w-[140px]">
                           <div className="font-semibold text-gray-900">
                             {formatTime(booking.start_time)} -{' '}
                             {formatTime(booking.end_time)}
@@ -171,9 +170,9 @@ export default function BookingsPage() {
 
                         {/* Details */}
                         <div>
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <div
-                              className="w-2.5 h-2.5 rounded-full"
+                              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                               style={{
                                 backgroundColor: booking.color || '#292929',
                               }}
@@ -184,7 +183,7 @@ export default function BookingsPage() {
                             {getStatusBadge(booking.status)}
                           </div>
 
-                          <div className="flex items-center gap-4 text-xs text-gray-500 mt-1.5">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 mt-1.5">
                             <span className="flex items-center gap-1">
                               <User className="w-3 h-3" />
                               {booking.booker_name}
@@ -205,7 +204,7 @@ export default function BookingsPage() {
 
                           {booking.notes && (
                             <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
-                              <FileText className="w-3 h-3" />
+                              <FileText className="w-3 h-3 flex-shrink-0" />
                               {booking.notes}
                             </p>
                           )}
@@ -214,7 +213,7 @@ export default function BookingsPage() {
 
                       {/* Actions */}
                       {booking.status === 'confirmed' && activeTab === 'upcoming' && (
-                        <div className="flex gap-2 ml-4">
+                        <div className="flex gap-2 self-start">
                           <Button
                             variant="ghost"
                             size="sm"

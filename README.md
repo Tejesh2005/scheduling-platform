@@ -239,7 +239,7 @@ The database is seeded with:
 
 ## 👤 Author
 
-Your Name — your-email@example.com
+M V TEJESH — venkatatejesh.m23@iiits.in
 
 ## 📄 License
 

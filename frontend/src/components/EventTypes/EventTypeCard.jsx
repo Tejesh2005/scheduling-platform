@@ -39,8 +39,8 @@ export default function EventTypeCard({ eventType, onEdit, onDelete, onToggle })
         style={{ backgroundColor: eventType.color || '#292929' }}
       />
 
-      <div className="pl-6 pr-4 py-4">
-        <div className="flex items-start justify-between">
+      <div className="pl-5 sm:pl-6 pr-3 sm:pr-4 py-3 sm:py-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           {/* Left side - Event info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-1">
@@ -52,7 +52,7 @@ export default function EventTypeCard({ eventType, onEdit, onDelete, onToggle })
               )}
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
+            <div className="flex items-center gap-3 text-xs text-gray-500 mb-2 sm:mb-3">
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 {eventType.duration} min
@@ -64,14 +64,14 @@ export default function EventTypeCard({ eventType, onEdit, onDelete, onToggle })
             </div>
 
             {eventType.description && (
-              <p className="text-xs text-gray-400 line-clamp-1 mb-3">
+              <p className="text-xs text-gray-400 line-clamp-1 mb-2 sm:mb-3 hidden sm:block">
                 {eventType.description}
               </p>
             )}
 
             {/* Booking link + actions */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400 truncate">
+              <span className="text-xs text-gray-400 truncate max-w-[150px] sm:max-w-none">
                 /johndoe/{eventType.slug}
               </span>
               <button
@@ -88,7 +88,7 @@ export default function EventTypeCard({ eventType, onEdit, onDelete, onToggle })
               )}
               <button
                 onClick={handlePreview}
-                className="p-1 rounded hover:bg-gray-100 transition-colors"
+                className="p-1 rounded hover:bg-gray-100 transition-colors hidden sm:block"
                 title="Preview"
               >
                 <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
@@ -97,7 +97,7 @@ export default function EventTypeCard({ eventType, onEdit, onDelete, onToggle })
           </div>
 
           {/* Right side - Toggle + Menu */}
-          <div className="flex items-center gap-3 ml-4">
+          <div className="flex items-center gap-3 sm:ml-4">
             <Toggle
               enabled={eventType.is_active}
               onChange={() => onToggle(eventType.id)}
