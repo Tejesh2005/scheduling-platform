@@ -15,10 +15,7 @@ export default function EventTypesPage() {
   const [editingEventType, setEditingEventType] = useState(null);
   const [saving, setSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
-
-  // Search
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     fetchEventTypes();
@@ -35,7 +32,6 @@ export default function EventTypesPage() {
     }
   };
 
-  // Filtered event types based on search
   const filteredEventTypes = useMemo(() => {
     if (!searchQuery.trim()) return eventTypes;
     const q = searchQuery.toLowerCase();
@@ -116,69 +112,60 @@ export default function EventTypesPage() {
 
   return (
     <div>
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+      {/* Page Header — matches Cal.com exactly */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Event types</h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <h1 className="text-[22px] font-bold text-white leading-tight">Event types</h1>
+          <p className="text-[13px] text-[#898989] mt-1">
             Configure different events for people to book on your calendar.
           </p>
         </div>
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          {showSearch ? (
-            <div className="flex items-center gap-2 border border-[#333333] bg-[#1a1a1a] rounded-md px-3 py-2">
-              <Search className="w-4 h-4 text-gray-500" />
-              <input
-                type="text"
-                placeholder="Search event types..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-                className="bg-transparent text-sm text-white placeholder:text-gray-500 focus:outline-none w-40 sm:w-52"
-              />
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          {/* Search — always visible input */}
+          <div className="flex items-center gap-2 border border-[#2e2e2e] bg-[#101010] rounded-md px-3 py-[7px]">
+            <Search className="w-4 h-4 text-[#666666]" />
+            <input
+              type="text"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent text-sm text-white placeholder:text-[#666666] focus:outline-none w-28 sm:w-40"
+            />
+            {searchQuery && (
               <button
-                onClick={() => {
-                  setShowSearch(false);
-                  setSearchQuery('');
-                }}
-                className="text-gray-500 hover:text-white transition-colors"
+                onClick={() => setSearchQuery('')}
+                className="text-[#666666] hover:text-white transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowSearch(true)}
-              className="flex items-center gap-2 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-3 py-2 text-sm text-gray-400 hover:text-white transition-colors"
-            >
-              <Search className="w-4 h-4" />
-              <span className="hidden sm:inline">Search</span>
-            </button>
-          )}
+            )}
+          </div>
+
+          {/* + New Button — white, prominent */}
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-1.5 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-3 py-2 text-sm font-medium text-white transition-colors"
+            className="flex items-center gap-1.5 bg-white hover:bg-gray-100 text-[#0a0a0a] rounded-md px-4 py-[7px] text-sm font-semibold transition-colors shadow-sm"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             New
           </button>
         </div>
       </div>
 
-      {/* Event Types List */}
+      {/* Event Types List — edge to edge card */}
       {filteredEventTypes.length === 0 ? (
-        <div className="bg-[#111111] border border-[#222222] rounded-lg p-8 sm:p-12 text-center">
+        <div className="bg-[#101010] border border-[#1c1c1c] rounded-lg p-8 sm:p-12 text-center">
           <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4">
             {searchQuery ? (
-              <Search className="w-8 h-8 text-gray-500" />
+              <Search className="w-8 h-8 text-[#555555]" />
             ) : (
-              <Calendar className="w-8 h-8 text-gray-500" />
+              <Calendar className="w-8 h-8 text-[#555555]" />
             )}
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">
+          <h3 className="text-base font-semibold text-white mb-2">
             {searchQuery ? 'No results found' : 'No event types yet'}
           </h3>
-          <p className="text-sm text-gray-400 mb-6">
+          <p className="text-sm text-[#898989] mb-6">
             {searchQuery
               ? `No event types match "${searchQuery}"`
               : 'Create your first event type to start accepting bookings.'}
@@ -186,7 +173,7 @@ export default function EventTypesPage() {
           {!searchQuery && (
             <button
               onClick={openCreateModal}
-              className="inline-flex items-center gap-1.5 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-4 py-2 text-sm font-medium text-white transition-colors"
+              className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-100 text-[#0a0a0a] rounded-md px-4 py-2 text-sm font-semibold transition-colors"
             >
               <Plus className="w-4 h-4" />
               New Event Type
@@ -194,7 +181,7 @@ export default function EventTypesPage() {
           )}
         </div>
       ) : (
-        <div className="bg-[#111111] border border-[#222222] rounded-lg overflow-hidden divide-y divide-[#1e1e1e]">
+        <div className="bg-[#101010] border border-[#1c1c1c] rounded-lg overflow-hidden divide-y divide-[#1c1c1c]">
           {filteredEventTypes.map((et) => (
             <EventTypeCard
               key={et.id}
@@ -234,7 +221,7 @@ export default function EventTypesPage() {
         title="Delete Event Type"
         size="sm"
       >
-        <p className="text-sm text-gray-400 mb-6">
+        <p className="text-sm text-[#898989] mb-6">
           Are you sure you want to delete this event type? This action cannot be
           undone and will cancel all upcoming bookings.
         </p>

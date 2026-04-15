@@ -3,10 +3,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   Calendar,
-  Clock,
-  MapPin,
-  User,
-  Mail,
   FileText,
   MoreHorizontal,
   Video,
@@ -15,6 +11,7 @@ import {
   Search,
   CalendarClock,
   X as XIcon,
+  ChevronDown,
 } from 'lucide-react';
 import { bookingsAPI } from '../api';
 import Button from '../components/UI/Button';
@@ -51,7 +48,6 @@ export default function BookingsPage() {
     fetchBookings();
   }, [activeTab]);
 
-  // Reset pagination when tab or search changes
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab, searchQuery, rowsPerPage]);
@@ -107,7 +103,7 @@ export default function BookingsPage() {
       .toLowerCase();
   };
 
-  // Filtered bookings by search
+  // Filtered bookings
   const filteredBookings = useMemo(() => {
     if (!searchQuery.trim()) return bookings;
     const q = searchQuery.toLowerCase();
@@ -120,64 +116,46 @@ export default function BookingsPage() {
     );
   }, [bookings, searchQuery]);
 
-  // Paginated bookings
+  // Pagination
   const totalPages = Math.ceil(filteredBookings.length / rowsPerPage);
   const paginatedBookings = useMemo(() => {
     const start = (currentPage - 1) * rowsPerPage;
     return filteredBookings.slice(start, start + rowsPerPage);
   }, [filteredBookings, currentPage, rowsPerPage]);
 
-  // Group bookings by date label
-  const groupedBookings = paginatedBookings.reduce((groups, booking) => {
-    const now = new Date();
-    const bookingDate = new Date(booking.start_time);
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    let label;
-    if (bookingDate.toDateString() === now.toDateString()) {
-      label = 'TODAY';
-    } else if (bookingDate.toDateString() === tomorrow.toDateString()) {
-      label = 'TOMORROW';
-    } else {
-      label = bookingDate.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-      }).toUpperCase();
-    }
-
-    if (!groups[label]) {
-      groups[label] = [];
-    }
-    groups[label].push(booking);
-    return groups;
-  }, {});
-
   const startRow = (currentPage - 1) * rowsPerPage + 1;
   const endRow = Math.min(currentPage * rowsPerPage, filteredBookings.length);
+
+  // Get section label
+  const getSectionLabel = () => {
+    if (activeTab === 'upcoming') return 'NEXT';
+    if (activeTab === 'past') return 'PAST';
+    if (activeTab === 'cancelled') return 'CANCELLED';
+    return '';
+  };
 
   return (
     <div>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-white">Bookings</h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <h1 className="text-[22px] font-bold text-white leading-tight">Bookings</h1>
+        <p className="text-[13px] text-[#898989] mt-1">
           See upcoming and past events booked through your event type links.
         </p>
       </div>
 
-      {/* Tabs + Search */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div className="flex items-center gap-1 bg-[#111111] border border-[#222222] rounded-lg p-1">
+      {/* Tabs row */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        {/* Left — Tabs */}
+        <div className="flex items-center gap-0 border border-[#2a2a2a] rounded-lg overflow-hidden">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              className={`px-4 py-2 text-[13px] font-medium transition-colors border-r border-[#2a2a2a] last:border-r-0 ${
                 activeTab === tab.key
-                  ? 'bg-[#1a1a1a] text-white'
-                  : 'text-gray-500 hover:text-white'
+                  ? 'text-white bg-[#1a1a1a]'
+                  : 'text-[#777777] hover:text-white bg-transparent hover:bg-[#111111]'
               }`}
             >
               {tab.label}
@@ -185,63 +163,51 @@ export default function BookingsPage() {
           ))}
         </div>
 
-        {/* Search */}
-        <div className="flex items-center gap-2">
-          {showSearch ? (
-            <div className="flex items-center gap-2 bg-[#111111] border border-[#222222] rounded-lg px-3 py-1.5">
-              <Search className="w-4 h-4 text-gray-500" />
-              <input
-                type="text"
-                placeholder="Search by name, email, event..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-                className="bg-transparent text-sm text-white placeholder:text-gray-500 focus:outline-none w-48 sm:w-64"
-              />
-              <button
-                onClick={() => {
-                  setShowSearch(false);
-                  setSearchQuery('');
-                }}
-                className="text-gray-500 hover:text-white transition-colors"
-              >
-                <XIcon className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowSearch(true)}
-              className="flex items-center gap-2 border border-[#333333] bg-[#1a1a1a] hover:bg-[#222222] rounded-md px-3 py-2 text-sm text-gray-400 hover:text-white transition-colors"
-            >
-              <Search className="w-4 h-4" />
-              <span className="hidden sm:inline">Search</span>
-            </button>
-          )}
-        </div>
+        {/* Right — Search */}
+<div className="flex items-center gap-2">
+  <div className="flex items-center gap-2 border border-[#2e2e2e] bg-[#101010] rounded-md px-3 py-[7px]">
+    <Search className="w-4 h-4 text-[#666666]" />
+    <input
+      type="text"
+      placeholder="Search"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="bg-transparent text-sm text-white placeholder:text-[#666666] focus:outline-none w-28 sm:w-40"
+    />
+    {searchQuery && (
+      <button
+        onClick={() => setSearchQuery('')}
+        className="text-[#666666] hover:text-white transition-colors"
+      >
+        <XIcon className="w-3.5 h-3.5" />
+      </button>
+    )}
+  </div>
+</div>
       </div>
 
       {/* Bookings List */}
       {loading ? (
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-[#1a1a1a] rounded w-24" />
-          <div className="h-20 bg-[#1a1a1a] rounded" />
-          <div className="h-20 bg-[#1a1a1a] rounded" />
+        <div className="bg-[#101010] border border-[#1c1c1c] rounded-lg">
+          <div className="animate-pulse p-5 space-y-6">
+            <div className="h-4 bg-[#1a1a1a] rounded w-16" />
+            <div className="h-16 bg-[#1a1a1a] rounded" />
+            <div className="h-16 bg-[#1a1a1a] rounded" />
+          </div>
         </div>
       ) : filteredBookings.length === 0 ? (
-        <div className="bg-[#111111] border border-[#222222] rounded-lg p-8 sm:p-12 text-center">
+        <div className="bg-[#101010] border border-[#1c1c1c] rounded-lg p-8 sm:p-12 text-center">
           <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4">
             {searchQuery ? (
-              <Search className="w-8 h-8 text-gray-500" />
+              <Search className="w-8 h-8 text-[#555555]" />
             ) : (
-              <Calendar className="w-8 h-8 text-gray-500" />
+              <Calendar className="w-8 h-8 text-[#555555]" />
             )}
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">
-            {searchQuery
-              ? 'No results found'
-              : `No ${activeTab} bookings`}
+          <h3 className="text-base font-semibold text-white mb-2">
+            {searchQuery ? 'No results found' : `No ${activeTab} bookings`}
           </h3>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-[#898989]">
             {searchQuery
               ? `No bookings match "${searchQuery}"`
               : activeTab === 'upcoming'
@@ -252,156 +218,157 @@ export default function BookingsPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {Object.entries(groupedBookings).map(([label, dateBookings]) => (
-            <div key={label}>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                {label}
-              </h3>
-              <div className="bg-[#111111] border border-[#222222] rounded-lg overflow-hidden divide-y divide-[#1a1a1a]">
-                {dateBookings.map((booking) => (
-                  <div key={booking.id} className="px-4 sm:px-6 py-4">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 flex-1">
-                        {/* Date & Time */}
-                        <div className="sm:min-w-[160px]">
-                          <div className="text-sm font-semibold text-white">
-                            {formatDate(booking.start_time)}
-                          </div>
-                          <div className="text-sm text-gray-400">
-                            {formatTime(booking.start_time)} -{' '}
-                            {formatTime(booking.end_time)}
-                          </div>
-                          <div className="flex items-center gap-1.5 mt-1.5">
-                            <Video className="w-3.5 h-3.5 text-gray-500" />
-                            <span className="text-xs text-blue-400 hover:underline cursor-pointer">
-                              Join {booking.location || 'Cal Video'}
-                            </span>
-                          </div>
-                        </div>
+        <>
+          {/* Main bookings card */}
+          <div className="bg-[#101010] border border-[#1c1c1c] rounded-lg">
+            {/* Section label */}
+            <div className="px-5 pt-5 pb-3">
+              <span className="text-[12px] font-semibold text-[#888888] tracking-wider">
+                {getSectionLabel()}
+              </span>
+            </div>
 
-                        {/* Event Details */}
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-semibold text-white">
-                              {booking.event_title} between John Doe and{' '}
-                              {booking.booker_name}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-500">
-                            <span>You and {booking.booker_name}</span>
-                          </div>
-
-                          {booking.notes && (
-                            <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
-                              <FileText className="w-3 h-3 flex-shrink-0" />
-                              {booking.notes}
-                            </p>
-                          )}
-
-                          {booking.status === 'cancelled' && (
-                            <Badge variant="danger" className="mt-2">
-                              Cancelled
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Actions - Dropdown Menu */}
-                      <div className="flex items-center self-start">
-                        {booking.status === 'confirmed' &&
-                          activeTab === 'upcoming' && (
-                            <div className="relative">
-                              <button
-                                onClick={() =>
-                                  setOpenMenuId(
-                                    openMenuId === booking.id ? null : booking.id
-                                  )
-                                }
-                                className="p-2 rounded-md hover:bg-[#1a1a1a] text-gray-500 hover:text-white transition-colors"
-                              >
-                                <MoreHorizontal className="w-4 h-4" />
-                              </button>
-
-                              {openMenuId === booking.id && (
-                                <>
-                                  <div
-                                    className="fixed inset-0 z-10"
-                                    onClick={() => setOpenMenuId(null)}
-                                  />
-                                  <div className="absolute right-0 top-9 z-20 w-48 bg-[#1a1a1a] border border-[#282828] rounded-lg shadow-xl py-1">
-                                    <button
-                                      onClick={() => {
-                                        setOpenMenuId(null);
-                                        setRescheduleBooking(booking);
-                                      }}
-                                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:bg-[#222222] hover:text-white"
-                                    >
-                                      <CalendarClock className="w-3.5 h-3.5" />
-                                      Reschedule
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        setOpenMenuId(null);
-                                        setCancelModal(booking.id);
-                                      }}
-                                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-[#222222] hover:text-red-300"
-                                    >
-                                      <XIcon className="w-3.5 h-3.5" />
-                                      Cancel
-                                    </button>
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          )}
+            {/* Booking rows */}
+            <div className="divide-y divide-[#1c1c1c]">
+              {paginatedBookings.map((booking) => (
+                <div
+                  key={booking.id}
+                  className="flex items-start justify-between px-5 py-5 hover:bg-[#141414] transition-colors"
+                >
+                  {/* Left — Date, Time, Join link */}
+                  <div className="flex gap-10 flex-1 min-w-0">
+                    {/* Date & Time column */}
+                    <div className="min-w-[170px] flex-shrink-0">
+                      <p className="text-[14px] font-semibold text-white leading-tight">
+                        {formatDate(booking.start_time)}
+                      </p>
+                      <p className="text-[13px] text-[#888888] mt-0.5">
+                        {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <Video className="w-3.5 h-3.5 text-[#555555]" />
+                        <span className="text-[12px] text-[#2ed1a3] hover:underline cursor-pointer font-medium">
+                          Join Cal Video
+                        </span>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between bg-[#111111] border border-[#222222] rounded-lg px-4 py-2.5">
-            <div className="flex items-center gap-2">
-              <select
-                value={rowsPerPage}
-                onChange={(e) => setRowsPerPage(Number(e.target.value))}
-                className="bg-[#1a1a1a] border border-[#282828] rounded-md px-2 py-1 text-sm text-white focus:outline-none"
-              >
-                {ROWS_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-              <span className="text-sm text-gray-500">rows per page</span>
+                    {/* Event details column */}
+                    <div className="flex-1 min-w-0 pt-[1px]">
+                      <p className="text-[14px] font-semibold text-white leading-tight truncate">
+                        {booking.event_title} between John Doe and {booking.booker_name}
+                      </p>
+                      <p className="text-[13px] text-[#888888] mt-0.5">
+                        You and {booking.booker_name}
+                      </p>
+
+                      {booking.notes && (
+                        <p className="text-[12px] text-[#666666] mt-2 flex items-center gap-1.5">
+                          <FileText className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">{booking.notes}</span>
+                        </p>
+                      )}
+
+                      {booking.status === 'cancelled' && (
+                        <Badge variant="danger" className="mt-2">Cancelled</Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right — Actions */}
+                  {booking.status === 'confirmed' && activeTab === 'upcoming' && (
+                    <div className="relative flex-shrink-0 ml-4">
+                      <button
+                        onClick={() =>
+                          setOpenMenuId(openMenuId === booking.id ? null : booking.id)
+                        }
+                        className="w-[34px] h-[34px] flex items-center justify-center rounded-lg border border-[#333333] bg-transparent hover:bg-[#1c1c1c] text-[#777777] hover:text-white transition-colors"
+                      >
+                        <MoreHorizontal className="w-[15px] h-[15px] stroke-[2.5]" />
+                      </button>
+
+                      {openMenuId === booking.id && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setOpenMenuId(null)}
+                          />
+                          <div className="absolute right-0 top-10 z-20 w-48 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow-2xl py-1 overflow-hidden">
+                            <button
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                setRescheduleBooking(booking);
+                              }}
+                              className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] text-[#cccccc] hover:bg-[#252525] hover:text-white transition-colors"
+                            >
+                              <CalendarClock className="w-3.5 h-3.5" />
+                              Reschedule
+                            </button>
+                            <div className="border-t border-[#2a2a2a]" />
+                            <button
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                setCancelModal(booking.id);
+                              }}
+                              className="flex items-center gap-2.5 w-full px-3.5 py-2 text-[13px] text-red-400 hover:bg-[#252525] hover:text-red-300 transition-colors"
+                            >
+                              <XIcon className="w-3.5 h-3.5" />
+                              Cancel
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
+          </div>
+
+          {/* Pagination — separate bar below */}
+          <div className="flex items-center justify-between px-2 py-3 mt-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">
+              <div className="flex items-center border border-[#2a2a2a] rounded-md overflow-hidden">
+                <select
+                  value={rowsPerPage}
+                  onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                  className="bg-transparent border-none px-2.5 py-1 text-[13px] text-white focus:outline-none appearance-none cursor-pointer pr-6"
+                >
+                  {ROWS_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt} className="bg-[#1a1a1a]">
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3 h-3 text-[#666666] -ml-5 mr-2 pointer-events-none" />
+              </div>
+              <span className="text-[13px] text-[#777777]">rows per page</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-[13px] text-[#777777]">
                 {filteredBookings.length > 0
                   ? `${startRow}-${endRow} of ${filteredBookings.length}`
                   : '0 results'}
               </span>
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="p-1 rounded hover:bg-[#1a1a1a] text-gray-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage >= totalPages}
-                className="p-1 rounded hover:bg-[#1a1a1a] text-gray-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-1 rounded hover:bg-[#1a1a1a] text-[#666666] hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage >= totalPages}
+                  className="p-1 rounded hover:bg-[#1a1a1a] text-[#666666] hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Cancel Modal */}
@@ -415,16 +382,15 @@ export default function BookingsPage() {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-400">
-            Are you sure you want to cancel this booking? The booker will be
-            notified.
+          <p className="text-sm text-[#898989]">
+            Are you sure you want to cancel this booking? The booker will be notified.
           </p>
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1.5">
               Reason for cancellation (optional)
             </label>
             <textarea
-              className="block w-full rounded-md border border-[#333333] bg-[#1a1a1a] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20 placeholder:text-gray-500"
+              className="block w-full rounded-md border border-[#333333] bg-[#1a1a1a] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20 placeholder:text-[#555555]"
               rows={3}
               placeholder="Let the booker know why..."
               value={cancelReason}
