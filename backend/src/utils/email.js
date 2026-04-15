@@ -1,26 +1,32 @@
 // FILE: src/utils/email.js
 
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT) || 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
-});
+const resendApiKey = process.env.RESEND_API_KEY;
+const resendFrom = process.env.RESEND_FROM;
+const hostEmail = process.env.RESEND_HOST_EMAIL;
 
-// Verify connection on startup
-transporter.verify().then(() => {
-  console.log('✅ Email service ready');
-}).catch((err) => {
-  console.log('⚠️  Email service not configured:', err.message);
-});
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+
+if (resend) {
+  console.log('✅ Resend email service ready');
+} else {
+  console.log('⚠️  Email service not configured: RESEND_API_KEY is missing');
+}
+
+async function sendEmail({ to, subject, html }) {
+  if (!resend || !resendFrom) {
+    console.log('⚠️  Skipping email send: missing RESEND_API_KEY or RESEND_FROM');
+    return;
+  }
+
+  await resend.emails.send({
+    from: resendFrom,
+    to,
+    subject,
+    html,
+  });
+}
 
 const formatDateTime = (dateStr) => {
   const date = new Date(dateStr);
@@ -126,19 +132,16 @@ async function sendBookingConfirmation({ bookerName, bookerEmail, hostName, even
 
   try {
     // Send to booker
-    await transporter.sendMail({
-      from: `"Cal.com" <${process.env.SMTP_FROM}>`,
+    await sendEmail({
       to: bookerEmail,
       subject: `Booking Confirmed: ${eventTitle} with ${hostName}`,
       html,
     });
 
     // Send to host
-    const hostEmail = process.env.SMTP_USER;
     if (hostEmail) {
       const hostHtml = html.replace('Your meeting has been scheduled successfully.', `${bookerName} (${bookerEmail}) has booked a meeting with you.`);
-      await transporter.sendMail({
-        from: `"Cal.com" <${process.env.SMTP_FROM}>`,
+      await sendEmail({
         to: hostEmail,
         subject: `New Booking: ${eventTitle} with ${bookerName}`,
         html: hostHtml,
@@ -206,17 +209,14 @@ async function sendBookingCancellation({ bookerName, bookerEmail, hostName, even
   `;
 
   try {
-    await transporter.sendMail({
-      from: `"Cal.com" <${process.env.SMTP_FROM}>`,
+    await sendEmail({
       to: bookerEmail,
       subject: `Booking Cancelled: ${eventTitle} with ${hostName}`,
       html,
     });
 
-    const hostEmail = process.env.SMTP_USER;
     if (hostEmail) {
-      await transporter.sendMail({
-        from: `"Cal.com" <${process.env.SMTP_FROM}>`,
+      await sendEmail({
         to: hostEmail,
         subject: `Booking Cancelled: ${eventTitle} - ${bookerName}`,
         html,
@@ -301,17 +301,14 @@ async function sendBookingRescheduled({ bookerName, bookerEmail, hostName, event
   `;
 
   try {
-    await transporter.sendMail({
-      from: `"Cal.com" <${process.env.SMTP_FROM}>`,
+    await sendEmail({
       to: bookerEmail,
       subject: `Booking Rescheduled: ${eventTitle} with ${hostName}`,
       html,
     });
 
-    const hostEmail = process.env.SMTP_USER;
     if (hostEmail) {
-      await transporter.sendMail({
-        from: `"Cal.com" <${process.env.SMTP_FROM}>`,
+      await sendEmail({
         to: hostEmail,
         subject: `Booking Rescheduled: ${eventTitle} - ${bookerName}`,
         html,
