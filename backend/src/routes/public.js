@@ -124,18 +124,17 @@ router.get('/:username/:slug/slots', async (req, res, next) => {
       }
     }
 
+    const slotTimezone = schedule.timezone || eventType.user_timezone || 'UTC';
     const bookingsResult = await db.query(
-      `SELECT start_time, end_time FROM bookings 
-       WHERE event_type_id = \$1 
+      `SELECT TO_CHAR(start_time AT TIME ZONE \$3, 'HH24:MI') as start_hhmm
+       FROM bookings
+       WHERE user_id = \$1
          AND status = 'confirmed'
-         AND DATE(start_time) = \$2`,
-      [eventType.id, date]
+         AND DATE(start_time AT TIME ZONE \$3) = \$2::date`,
+      [eventType.uid, date, slotTimezone]
     );
 
-    const bookedTimes = bookingsResult.rows.map((b) => {
-      const start = new Date(b.start_time);
-      return `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
-    });
+    const bookedTimes = bookingsResult.rows.map((b) => b.start_hhmm);
 
     availableSlots = availableSlots.filter(
       (slot) => !bookedTimes.includes(slot.start)
