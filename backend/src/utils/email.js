@@ -35,20 +35,30 @@ async function sendEmail({ to, subject, html }) {
   return data?.id || null;
 }
 
-const formatDateTime = (dateStr) => {
+const formatDateTime = (dateStr, timezone) => {
   const date = new Date(dateStr);
+
+  const dateOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  };
+
+  const timeOptions = {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  };
+
+  if (timezone) {
+    dateOptions.timeZone = timezone;
+    timeOptions.timeZone = timezone;
+  }
+
   return {
-    date: date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }),
-    time: date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    }),
+    date: date.toLocaleDateString('en-US', dateOptions),
+    time: date.toLocaleTimeString('en-US', timeOptions),
   };
 };
 
@@ -78,8 +88,8 @@ const baseStyles = `
 `;
 
 async function sendBookingConfirmation({ bookerName, bookerEmail, hostName, eventTitle, startTime, endTime, location, timezone }) {
-  const start = formatDateTime(startTime);
-  const end = formatDateTime(endTime);
+  const start = formatDateTime(startTime, timezone);
+  const end = formatDateTime(endTime, timezone);
 
   const html = `
     <!DOCTYPE html>
@@ -162,8 +172,8 @@ async function sendBookingConfirmation({ bookerName, bookerEmail, hostName, even
 }
 
 async function sendBookingCancellation({ bookerName, bookerEmail, hostName, eventTitle, startTime, endTime, location, timezone, reason }) {
-  const start = formatDateTime(startTime);
-  const end = formatDateTime(endTime);
+  const start = formatDateTime(startTime, timezone);
+  const end = formatDateTime(endTime, timezone);
 
   const html = `
     <!DOCTYPE html>
@@ -237,10 +247,10 @@ async function sendBookingCancellation({ bookerName, bookerEmail, hostName, even
 }
 
 async function sendBookingRescheduled({ bookerName, bookerEmail, hostName, eventTitle, oldStartTime, oldEndTime, newStartTime, newEndTime, location, timezone }) {
-  const oldStart = formatDateTime(oldStartTime);
-  const oldEnd = formatDateTime(oldEndTime);
-  const newStart = formatDateTime(newStartTime);
-  const newEnd = formatDateTime(newEndTime);
+  const oldStart = formatDateTime(oldStartTime, timezone);
+  const oldEnd = formatDateTime(oldEndTime, timezone);
+  const newStart = formatDateTime(newStartTime, timezone);
+  const newEnd = formatDateTime(newEndTime, timezone);
 
   const html = `
     <!DOCTYPE html>

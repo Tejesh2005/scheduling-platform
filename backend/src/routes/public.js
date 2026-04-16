@@ -161,7 +161,7 @@ router.get('/:username/:slug/slots', async (req, res, next) => {
 router.post('/:username/:slug/book', async (req, res, next) => {
   try {
     const { username, slug } = req.params;
-    const { booker_name, booker_email, start_time, end_time, notes } = req.body;
+    const { booker_name, booker_email, start_time, end_time, notes, booker_timezone } = req.body;
 
     if (!booker_name || !booker_email || !start_time || !end_time) {
       throw new AppError('Name, email, start time, and end time are required', 400);
@@ -207,6 +207,13 @@ router.post('/:username/:slug/book', async (req, res, next) => {
     booking.host_name = eventType.user_name || 'John Doe';
     booking.user_timezone = eventType.user_timezone || 'Asia/Kolkata';
 
+    const selectedTimezone =
+      typeof booker_timezone === 'string' && booker_timezone.trim()
+        ? booker_timezone.trim()
+        : eventType.user_timezone || 'Asia/Kolkata';
+
+    booking.booker_timezone = selectedTimezone;
+
     // Send confirmation email (non-blocking)
     sendBookingConfirmation({
       bookerName: booker_name,
@@ -216,7 +223,7 @@ router.post('/:username/:slug/book', async (req, res, next) => {
       startTime: start_time,
       endTime: end_time,
       location: eventType.location || 'Google Meet',
-      timezone: eventType.user_timezone || 'Asia/Kolkata',
+      timezone: selectedTimezone,
     }).catch(err => console.error('Email error:', err));
 
     res.status(201).json({ success: true, data: booking });

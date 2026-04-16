@@ -235,6 +235,7 @@ export default function PublicBookingPage() {
         notes: formData.notes,
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),
+        booker_timezone: selectedTimezone,
       });
 
       setConfirmedBooking(res.data.data);
