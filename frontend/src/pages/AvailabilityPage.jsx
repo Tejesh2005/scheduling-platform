@@ -372,16 +372,16 @@ export default function AvailabilityPage() {
                       </div>
 
                       {isDayEnabled && firstSlot ? (
-                      <div className="ml-11 sm:ml-0 mt-0.5 sm:mt-0 space-y-2">
+                      <div className="ml-11 sm:ml-0 mt-0.5 sm:mt-0 space-y-2 min-w-0">
                         {daySlots.filter((slot) => slot.is_enabled).map((slot, rowIdx) => (
                           <div
                             key={slot.id || `${slot.day_of_week}-${slot.start_time}-${slot.end_time}-${rowIdx}`}
-                            className="flex items-center gap-2"
+                            className="flex flex-wrap sm:flex-nowrap items-center gap-2"
                           >
                             <select
                               value={slot.start_time?.substring(0, 5)}
                               onChange={(e) => handleSlotChange(slot.id, 'start_time', e.target.value)}
-                              className="rounded-md border border-[#333333] bg-[#1a1a1a] px-2.5 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20 w-[100px]"
+                              className="rounded-md border border-[#333333] bg-[#1a1a1a] px-2.5 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20 w-[110px] sm:w-[100px]"
                             >
                               {TIME_OPTIONS.map((t) => (
                                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -393,7 +393,7 @@ export default function AvailabilityPage() {
                             <select
                               value={slot.end_time?.substring(0, 5)}
                               onChange={(e) => handleSlotChange(slot.id, 'end_time', e.target.value)}
-                              className="rounded-md border border-[#333333] bg-[#1a1a1a] px-2.5 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20 w-[100px]"
+                              className="rounded-md border border-[#333333] bg-[#1a1a1a] px-2.5 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20 w-[110px] sm:w-[100px]"
                             >
                               {TIME_OPTIONS.map((t) => (
                                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -401,7 +401,7 @@ export default function AvailabilityPage() {
                             </select>
 
                             {rowIdx === 0 ? (
-                              <>
+                              <div className="flex items-center gap-1.5">
                                 <button
                                   type="button"
                                   onClick={() => addSlotForDay(dayIdx)}
@@ -426,7 +426,7 @@ export default function AvailabilityPage() {
                                   </button>
 
                                   {copySourceSlotId === slot.id && (
-                                    <div className="absolute left-0 sm:left-auto sm:right-0 top-12 z-40 w-[280px] rounded-2xl border border-[#252525] bg-[#070809] shadow-[0_18px_40px_rgba(0,0,0,0.55)] overflow-hidden">
+                                    <div className="absolute left-0 sm:left-auto sm:right-0 top-12 z-40 w-[calc(100vw-2rem)] max-w-[280px] rounded-2xl border border-[#252525] bg-[#070809] shadow-[0_18px_40px_rgba(0,0,0,0.55)] overflow-hidden">
                                       <div className="px-5 pt-5 pb-3">
                                         <p className="text-[12px] tracking-wide uppercase text-[#9ca3af] mb-2.5 font-semibold">
                                           Copy times to
@@ -476,7 +476,7 @@ export default function AvailabilityPage() {
                                     </div>
                                   )}
                                 </div>
-                              </>
+                              </div>
                             ) : (
                               <span className="w-[61px]" aria-hidden="true" />
                             )}

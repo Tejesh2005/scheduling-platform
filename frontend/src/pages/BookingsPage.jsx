@@ -145,45 +145,47 @@ export default function BookingsPage() {
       </div>
 
       {/* Tabs row */}
-      <div className="flex items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         {/* Left — Tabs */}
-        <div className="flex items-center gap-0 border border-[#2a2a2a] rounded-lg overflow-hidden">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 text-[13px] font-medium transition-colors border-r border-[#2a2a2a] last:border-r-0 ${
-                activeTab === tab.key
-                  ? 'text-white bg-[#1a1a1a]'
-                  : 'text-[#777777] hover:text-white bg-transparent hover:bg-[#111111]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="-mx-1 px-1 overflow-x-auto">
+          <div className="inline-flex min-w-max items-center gap-0 border border-[#2a2a2a] rounded-lg overflow-hidden">
+            {TABS.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-3 sm:px-4 py-2 text-[12px] sm:text-[13px] font-medium whitespace-nowrap transition-colors border-r border-[#2a2a2a] last:border-r-0 ${
+                  activeTab === tab.key
+                    ? 'text-white bg-[#1a1a1a]'
+                    : 'text-[#777777] hover:text-white bg-transparent hover:bg-[#111111]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Right — Search */}
-<div className="flex items-center gap-2">
-  <div className="flex items-center gap-2 border border-[#2e2e2e] bg-[#101010] rounded-md px-3 py-[7px]">
-    <Search className="w-4 h-4 text-[#666666]" />
-    <input
-      type="text"
-      placeholder="Search"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      className="bg-transparent text-sm text-white placeholder:text-[#666666] focus:outline-none w-28 sm:w-40"
-    />
-    {searchQuery && (
-      <button
-        onClick={() => setSearchQuery('')}
-        className="text-[#666666] hover:text-white transition-colors"
-      >
-        <XIcon className="w-3.5 h-3.5" />
-      </button>
-    )}
-  </div>
-</div>
+        <div className="w-full sm:w-auto">
+          <div className="flex items-center gap-2 border border-[#2e2e2e] bg-[#101010] rounded-md px-3 py-[7px] w-full sm:w-auto">
+            <Search className="w-4 h-4 text-[#666666]" />
+            <input
+              type="text"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent text-sm text-white placeholder:text-[#666666] focus:outline-none w-full sm:w-40 min-w-0"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-[#666666] hover:text-white transition-colors"
+              >
+                <XIcon className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Bookings List */}
@@ -233,12 +235,12 @@ export default function BookingsPage() {
               {paginatedBookings.map((booking) => (
                 <div
                   key={booking.id}
-                  className="flex items-start justify-between px-5 py-5 hover:bg-[#141414] transition-colors"
+                  className="flex flex-col gap-4 px-4 sm:px-5 py-4 sm:py-5 hover:bg-[#141414] transition-colors sm:flex-row sm:items-start sm:justify-between"
                 >
                   {/* Left — Date, Time, Join link */}
-                  <div className="flex gap-10 flex-1 min-w-0">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:gap-10 flex-1 min-w-0">
                     {/* Date & Time column */}
-                    <div className="min-w-[170px] flex-shrink-0">
+                    <div className="sm:min-w-[170px] flex-shrink-0">
                       <p className="text-[14px] font-semibold text-white leading-tight">
                         {formatDate(booking.start_time)}
                       </p>
@@ -255,7 +257,7 @@ export default function BookingsPage() {
 
                     {/* Event details column */}
                     <div className="flex-1 min-w-0 pt-[1px]">
-                      <p className="text-[14px] font-semibold text-white leading-tight truncate">
+                      <p className="text-[14px] font-semibold text-white leading-tight break-words sm:truncate">
                         {booking.event_title} between John Doe and {booking.booker_name}
                       </p>
                       <p className="text-[13px] text-[#888888] mt-0.5">
@@ -277,7 +279,7 @@ export default function BookingsPage() {
 
                   {/* Right — Actions */}
                   {booking.status === 'confirmed' && activeTab === 'upcoming' && (
-                    <div className="relative flex-shrink-0 ml-4">
+                    <div className="relative flex-shrink-0 self-end sm:self-start sm:ml-4">
                       <button
                         onClick={() =>
                           setOpenMenuId(openMenuId === booking.id ? null : booking.id)
@@ -326,7 +328,7 @@ export default function BookingsPage() {
           </div>
 
           {/* Pagination — separate bar below */}
-          <div className="flex items-center justify-between px-2 py-3 mt-2">
+          <div className="flex flex-col gap-3 px-2 py-3 mt-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <div className="flex items-center border border-[#2a2a2a] rounded-md overflow-hidden">
                 <select
@@ -344,7 +346,7 @@ export default function BookingsPage() {
               </div>
               <span className="text-[13px] text-[#777777]">rows per page</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between sm:justify-start gap-3">
               <span className="text-[13px] text-[#777777]">
                 {filteredBookings.length > 0
                   ? `${startRow}-${endRow} of ${filteredBookings.length}`
