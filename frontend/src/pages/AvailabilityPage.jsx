@@ -43,6 +43,8 @@ export default function AvailabilityPage() {
     start_time: '09:00',
     end_time: '17:00',
   });
+  const [copySourceSlotId, setCopySourceSlotId] = useState(null);
+  const [copyTargets, setCopyTargets] = useState({});
 
   useEffect(() => {
     fetchSchedules();
@@ -113,6 +115,64 @@ export default function AvailabilityPage() {
     }
   };
 
+  const openCopyPopover = (slot) => {
+    const initialTargets = DAYS.reduce((acc, _, dayIdx) => {
+      acc[dayIdx] = dayIdx === slot.day_of_week;
+      return acc;
+    }, {});
+
+    setCopySourceSlotId(slot.id);
+    setCopyTargets(initialTargets);
+  };
+
+  const closeCopyPopover = () => {
+    setCopySourceSlotId(null);
+    setCopyTargets({});
+  };
+
+  const toggleCopyTarget = (dayIdx) => {
+    setCopyTargets((prev) => ({
+      ...prev,
+      [dayIdx]: !prev[dayIdx],
+    }));
+  };
+
+  const toggleSelectAllCopyTargets = (checked) => {
+    const allTargets = DAYS.reduce((acc, _, dayIdx) => {
+      acc[dayIdx] = checked;
+      return acc;
+    }, {});
+    setCopyTargets(allTargets);
+  };
+
+  const applyCopyTimes = () => {
+    if (!copySourceSlotId) return;
+
+    const sourceSlot = activeSchedule.slots.find((slot) => slot.id === copySourceSlotId);
+    if (!sourceSlot) {
+      closeCopyPopover();
+      return;
+    }
+
+    setActiveSchedule((prev) => ({
+      ...prev,
+      slots: prev.slots.map((slot) => {
+        if (!copyTargets[slot.day_of_week]) {
+          return slot;
+        }
+
+        return {
+          ...slot,
+          is_enabled: true,
+          start_time: sourceSlot.start_time,
+          end_time: sourceSlot.end_time,
+        };
+      }),
+    }));
+
+    closeCopyPopover();
+  };
+
   // Get schedule summary text
   const getScheduleSummary = () => {
     if (!activeSchedule) return '';
@@ -147,6 +207,8 @@ export default function AvailabilityPage() {
       </div>
     );
   }
+
+  const allDaysSelected = DAYS.every((_, dayIdx) => copyTargets[dayIdx]);
 
   return (
     <div>
@@ -235,9 +297,75 @@ export default function AvailabilityPage() {
                         <Plus className="w-4 h-4" />
                       </button>
 
-                      <button className="p-1.5 rounded-md hover:bg-[#1a1a1a] text-gray-500 hover:text-white transition-colors">
-                        <Copy className="w-4 h-4" />
-                      </button>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            copySourceSlotId === slot.id
+                              ? closeCopyPopover()
+                              : openCopyPopover(slot)
+                          }
+                          className={`p-1.5 rounded-md transition-colors ${
+                            copySourceSlotId === slot.id
+                              ? 'bg-[#1a1a1a] text-white'
+                              : 'text-gray-500 hover:bg-[#1a1a1a] hover:text-white'
+                          }`}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+
+                        {copySourceSlotId === slot.id && (
+                          <div className="absolute left-0 sm:left-auto sm:right-0 top-10 z-30 w-[220px] rounded-xl border border-[#222222] bg-[#0f0f0f] shadow-2xl p-3">
+                            <p className="text-[11px] tracking-wide uppercase text-gray-400 mb-2.5 font-semibold">
+                              Copy times to
+                            </p>
+
+                            <label className="flex items-center gap-2.5 py-1.5 text-sm text-white cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={allDaysSelected}
+                                onChange={(e) => toggleSelectAllCopyTargets(e.target.checked)}
+                                className="h-4 w-4 rounded border-[#3a3a3a] bg-transparent text-white focus:ring-0"
+                              />
+                              Select all
+                            </label>
+
+                            <div className="mt-1 space-y-0.5 max-h-[220px] overflow-y-auto pr-1">
+                              {DAYS.map((day, dayIdx) => (
+                                <label
+                                  key={day}
+                                  className="flex items-center gap-2.5 py-1.5 text-sm text-white cursor-pointer"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={!!copyTargets[dayIdx]}
+                                    onChange={() => toggleCopyTarget(dayIdx)}
+                                    className="h-4 w-4 rounded border-[#3a3a3a] bg-transparent text-white focus:ring-0"
+                                  />
+                                  {day}
+                                </label>
+                              ))}
+                            </div>
+
+                            <div className="mt-3 pt-2 border-t border-[#222222] flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={closeCopyPopover}
+                                className="px-2.5 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-[#1a1a1a]"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={applyCopyTimes}
+                                className="px-3 py-1.5 text-sm font-semibold rounded-md bg-white text-[#0a0a0a] hover:bg-gray-200"
+                              >
+                                Apply
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <span className="text-sm text-gray-600 ml-11 sm:ml-0"></span>
