@@ -90,11 +90,11 @@ A full-stack scheduling/booking web application that closely replicates Cal.com'
     cd backend
     npm install
 
-Create a .env file in the backend folder with these values:
+Create a `.env` file in the backend folder with these values:
 
     DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/scheduling_platform
-    PORT=5000
     DEFAULT_USER_ID=550e8400-e29b-41d4-a716-446655440000
+    PORT=5000
     FRONTEND_URL=http://localhost:5173
 
 For email notifications (optional — app works without it):
@@ -104,6 +104,26 @@ For email notifications (optional — app works without it):
     RESEND_HOST_EMAIL=your-email@example.com
 
 > For production, use a verified domain sender in Resend (for example, no-reply@yourdomain.com).
+
+The backend also ships with a `.env.example` file that uses the same variable names.
+
+### Environment Variables
+
+Backend variables used by the current codebase:
+
+    DATABASE_URL=postgresql://...
+    DEFAULT_USER_ID=550e8400-e29b-41d4-a716-446655440000
+    PORT=5000
+    FRONTEND_URL=http://localhost:5173
+    RESEND_API_KEY=re_xxxxxxxxxxxxxxxxx
+    RESEND_FROM=onboarding@resend.dev
+    RESEND_HOST_EMAIL=host@example.com
+
+Frontend variables used by the current codebase:
+
+    VITE_API_URL=http://localhost:5000/api
+
+If `VITE_API_URL` is not set, the frontend falls back to `/api` and uses the Vite dev proxy in local development.
 
 Setup and seed the database:
 
@@ -116,6 +136,8 @@ Setup and seed the database:
     cd frontend
     npm install
     npm run dev
+
+If you are not using the local Vite proxy, set `VITE_API_URL` to your backend base URL.
 
 ### 4. Open in browser
 
@@ -274,7 +296,7 @@ Build/Publish:
 
 ## 🧪 Sample Data
 
-The database is seeded with:
+The current seed script creates:
 
 | Data | Details |
 |------|---------|
