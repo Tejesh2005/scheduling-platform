@@ -240,7 +240,7 @@ export default function AvailabilityPage() {
         {/* Left - Schedule */}
         <div className="flex-1">
           {/* Weekly Schedule */}
-          <div className="bg-[#111111] border border-[#222222] rounded-lg overflow-hidden">
+          <div className="bg-[#111111] border border-[#222222] rounded-lg overflow-visible">
             <div className="divide-y divide-[#1a1a1a]">
               {activeSchedule.slots.map((slot) => (
                 <div
@@ -307,7 +307,7 @@ export default function AvailabilityPage() {
                           }
                           className={`p-1.5 rounded-md transition-colors ${
                             copySourceSlotId === slot.id
-                              ? 'bg-[#1a1a1a] text-white'
+                              ? 'bg-[#1a1a1a] text-white ring-2 ring-[#5a95ff]'
                               : 'text-gray-500 hover:bg-[#1a1a1a] hover:text-white'
                           }`}
                         >
@@ -315,50 +315,52 @@ export default function AvailabilityPage() {
                         </button>
 
                         {copySourceSlotId === slot.id && (
-                          <div className="absolute left-0 sm:left-auto sm:right-0 top-10 z-30 w-[220px] rounded-xl border border-[#222222] bg-[#0f0f0f] shadow-2xl p-3">
-                            <p className="text-[11px] tracking-wide uppercase text-gray-400 mb-2.5 font-semibold">
-                              Copy times to
-                            </p>
+                          <div className="absolute left-0 sm:left-auto sm:right-0 top-12 z-40 w-[280px] rounded-2xl border border-[#252525] bg-[#070809] shadow-[0_18px_40px_rgba(0,0,0,0.55)] overflow-hidden">
+                            <div className="px-5 pt-5 pb-3">
+                              <p className="text-[12px] tracking-wide uppercase text-[#9ca3af] mb-2.5 font-semibold">
+                                Copy times to
+                              </p>
 
-                            <label className="flex items-center gap-2.5 py-1.5 text-sm text-white cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={allDaysSelected}
-                                onChange={(e) => toggleSelectAllCopyTargets(e.target.checked)}
-                                className="h-4 w-4 rounded border-[#3a3a3a] bg-transparent text-white focus:ring-0"
-                              />
-                              Select all
-                            </label>
+                              <label className="flex items-center gap-3 py-1.5 text-sm text-white cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={allDaysSelected}
+                                  onChange={(e) => toggleSelectAllCopyTargets(e.target.checked)}
+                                  className="h-[18px] w-[18px] rounded-[4px] border border-[#4b5563] bg-transparent accent-blue-500"
+                                />
+                                <span className="text-sm leading-none">Select all</span>
+                              </label>
+                            </div>
 
-                            <div className="mt-1 space-y-0.5 max-h-[220px] overflow-y-auto pr-1">
+                            <div className="max-h-[300px] overflow-y-auto px-5 pb-3 space-y-0.5">
                               {DAYS.map((day, dayIdx) => (
                                 <label
                                   key={day}
-                                  className="flex items-center gap-2.5 py-1.5 text-sm text-white cursor-pointer"
+                                  className="flex items-center gap-3 py-1.5 text-base text-white cursor-pointer"
                                 >
                                   <input
                                     type="checkbox"
                                     checked={!!copyTargets[dayIdx]}
                                     onChange={() => toggleCopyTarget(dayIdx)}
-                                    className="h-4 w-4 rounded border-[#3a3a3a] bg-transparent text-white focus:ring-0"
+                                    className="h-[18px] w-[18px] rounded-[4px] border border-[#4b5563] bg-transparent accent-blue-500"
                                   />
                                   {day}
                                 </label>
                               ))}
                             </div>
 
-                            <div className="mt-3 pt-2 border-t border-[#222222] flex items-center justify-end gap-2">
+                            <div className="px-4 py-3 border-t border-[#242424] bg-[#070809] flex items-center justify-end gap-2">
                               <button
                                 type="button"
                                 onClick={closeCopyPopover}
-                                className="px-2.5 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-[#1a1a1a]"
+                                className="px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-[#111214]"
                               >
                                 Cancel
                               </button>
                               <button
                                 type="button"
                                 onClick={applyCopyTimes}
-                                className="px-3 py-1.5 text-sm font-semibold rounded-md bg-white text-[#0a0a0a] hover:bg-gray-200"
+                                className="px-4 py-1.5 text-sm font-semibold rounded-xl bg-white text-[#0a0a0a] hover:bg-gray-200"
                               >
                                 Apply
                               </button>
