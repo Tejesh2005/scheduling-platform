@@ -125,6 +125,8 @@ router.put('/:id', async (req, res, next) => {
   try {
     const { name, timezone, slots } = req.body;
 
+    await db.query('BEGIN');
+
     // Update schedule info
     await db.query(
       `UPDATE availability_schedules 
@@ -135,27 +137,23 @@ router.put('/:id', async (req, res, next) => {
       [name, timezone, req.params.id, DEFAULT_USER_ID]
     );
 
-    // Update slots if provided
+    // Replace all slots with submitted state so add/remove actions persist cleanly.
     if (slots && Array.isArray(slots)) {
+      await db.query(
+        'DELETE FROM availability_slots WHERE schedule_id = \$1',
+        [req.params.id]
+      );
+
       for (const slot of slots) {
-        if (slot.id) {
-          // Update existing slot
-          await db.query(
-            `UPDATE availability_slots 
-             SET start_time = \$1, end_time = \$2, is_enabled = \$3
-             WHERE id = \$4 AND schedule_id = \$5`,
-            [slot.start_time, slot.end_time, slot.is_enabled, slot.id, req.params.id]
-          );
-        } else {
-          // Insert new slot
-          await db.query(
-            `INSERT INTO availability_slots (schedule_id, day_of_week, start_time, end_time, is_enabled)
-             VALUES (\$1, \$2, \$3, \$4, \$5)`,
-            [req.params.id, slot.day_of_week, slot.start_time, slot.end_time, slot.is_enabled]
-          );
-        }
+        await db.query(
+          `INSERT INTO availability_slots (schedule_id, day_of_week, start_time, end_time, is_enabled)
+           VALUES (\$1, \$2, \$3, \$4, \$5)`,
+          [req.params.id, slot.day_of_week, slot.start_time, slot.end_time, slot.is_enabled]
+        );
       }
     }
+
+    await db.query('COMMIT');
 
     // Return updated schedule
     const schedule = await db.query(
@@ -182,6 +180,11 @@ router.put('/:id', async (req, res, next) => {
       },
     });
   } catch (err) {
+    try {
+      await db.query('ROLLBACK');
+    } catch (rollbackError) {
+      console.error('Rollback failed:', rollbackError.message);
+    }
     next(err);
   }
 });
