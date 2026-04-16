@@ -5,6 +5,43 @@ const { AppError } = require('../middleware/errorHandler');
 
 const DEFAULT_USER_ID = process.env.DEFAULT_USER_ID;
 
+function toHHMM(value) {
+  return String(value || '').substring(0, 5);
+}
+
+function dedupeSlots(slots) {
+  const seen = new Set();
+  const unique = [];
+
+  for (const slot of slots || []) {
+    const day = Number(slot.day_of_week);
+    const start = toHHMM(slot.start_time);
+    const end = toHHMM(slot.end_time);
+    const enabled = !!slot.is_enabled;
+
+    if (!Number.isInteger(day) || day < 0 || day > 6 || !start || !end || start >= end) {
+      continue;
+    }
+
+    const key = `${day}|${start}|${end}|${enabled}`;
+    if (seen.has(key)) continue;
+
+    seen.add(key);
+    unique.push({
+      ...slot,
+      day_of_week: day,
+      start_time: start,
+      end_time: end,
+      is_enabled: enabled,
+    });
+  }
+
+  return unique.sort((a, b) => {
+    if (a.day_of_week !== b.day_of_week) return a.day_of_week - b.day_of_week;
+    return a.start_time.localeCompare(b.start_time);
+  });
+}
+
 // GET all availability schedules with their slots
 router.get('/', async (req, res, next) => {
   try {
@@ -34,7 +71,7 @@ router.get('/', async (req, res, next) => {
 
         return {
           ...schedule,
-          slots: slots.rows,
+          slots: dedupeSlots(slots.rows),
           overrides: overrides.rows,
         };
       })
@@ -72,7 +109,7 @@ router.get('/:id', async (req, res, next) => {
       success: true,
       data: {
         ...schedule.rows[0],
-        slots: slots.rows,
+        slots: dedupeSlots(slots.rows),
         overrides: overrides.rows,
       },
     });
@@ -90,7 +127,7 @@ router.post('/', async (req, res, next) => {
       `INSERT INTO availability_schedules (user_id, name, timezone, is_default)
        VALUES (\$1, \$2, \$3, false)
        RETURNING *`,
-      [DEFAULT_USER_ID, name || 'New Schedule', timezone || 'America/New_York']
+      [DEFAULT_USER_ID, name || 'New Schedule', timezone || 'Asia/Kolkata']
     );
 
     const scheduleId = result.rows[0].id;
@@ -139,12 +176,14 @@ router.put('/:id', async (req, res, next) => {
 
     // Replace all slots with submitted state so add/remove actions persist cleanly.
     if (slots && Array.isArray(slots)) {
+      const normalizedSlots = dedupeSlots(slots);
+
       await db.query(
         'DELETE FROM availability_slots WHERE schedule_id = \$1',
         [req.params.id]
       );
 
-      for (const slot of slots) {
+      for (const slot of normalizedSlots) {
         await db.query(
           `INSERT INTO availability_slots (schedule_id, day_of_week, start_time, end_time, is_enabled)
            VALUES (\$1, \$2, \$3, \$4, \$5)`,
@@ -175,7 +214,7 @@ router.put('/:id', async (req, res, next) => {
       success: true,
       data: {
         ...schedule.rows[0],
-        slots: updatedSlots.rows,
+        slots: dedupeSlots(updatedSlots.rows),
         overrides: overrides.rows,
       },
     });
